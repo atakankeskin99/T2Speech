@@ -32,7 +32,25 @@
         
         <label for="description">Description</label>
         <textarea id="description" name="description"></textarea>
-        
+        <div class="form-field">
+    <label for="front_language">Front language</label>
+    <select id="front_language" name="front_language" required>
+        <option value="" disabled selected>Select a language</option>
+        {% for code, label in languages %}
+        <option value="{{ code }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-field">
+    <label for="back_language">Back language</label>
+    <select id="back_language" name="back_language" required>
+        <option value="" disabled selected>Select a language</option>
+        {% for code, label in languages %}
+        <option value="{{ code }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>
         
         <button type="submit">Create deck</button>
         </form>

@@ -47,6 +47,27 @@
                                 name="description"
                             >{{ deck[2] }}</textarea>
                         </div>
+        <div class="form-field">
+    <label for="front_language">Front language</label>
+    <select id="front_language" name="front_language" required>
+        {% for code, label in languages %}
+        <option value="{{ code }}" {% if deck[4] == code %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-field">
+    <label for="back_language">Back language</label>
+    <select id="back_language" name="back_language" required>
+        {% for code, label in languages %}
+        <option value="{{ code }}" {% if deck[5] == code %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+</div>                
 
                         <div class="form-actions">
                             <button class="button-primary" type="submit">

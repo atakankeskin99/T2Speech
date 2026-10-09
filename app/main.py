@@ -18,6 +18,23 @@ update_deck,
 )
 
 app = FastAPI()
+LANGUAGES = [
+    ("de-DE", "German"),
+    ("en-GB", "English (UK)"),
+    ("en-US", "English (US)"),
+    ("es-ES", "Spanish"),
+    ("fr-FR", "French"),
+    ("it-IT", "Italian"),
+    ("ja-JP", "Japanese"),
+    ("ko-KR", "Korean"),
+    ("nl-NL", "Dutch"),
+    ("pl-PL", "Polish"),
+    ("pt-BR", "Portuguese (Brazil)"),
+    ("ru-RU", "Russian"),
+    ("tr-TR", "Turkish"),
+    ("zh-CN", "Chinese (Mandarin)"),
+]
+
 initialize_database()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -28,10 +45,10 @@ def read_root(request: Request):
     decks = get_decks()
 
     return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={"decks": decks}
-    )
+    request=request,
+    name="index.html",
+    context={"decks": decks, "languages": LANGUAGES}
+)
 
 @app.get("/decks/{deck_id}", response_class=HTMLResponse)
 def read_deck(request: Request, deck_id: int):
@@ -55,19 +72,29 @@ def edit_deck(request: Request, deck_id: int):
     return templates.TemplateResponse(
         request=request,
         name="edit_deck.html",
-        context={"deck": deck}
+        context={"deck": deck, "languages": LANGUAGES}
     )
 
 @app.post("/decks/{deck_id}/edit")
 def save_deck(
     deck_id: int,
     name: str = Form(...),
-    description: str = Form("")
+    description: str = Form(""),
+    front_language: str = Form(...),
+    back_language: str = Form(...)
 ):
     deck = get_deck(deck_id)
+
     if deck is None:
         raise HTTPException(status_code=404, detail="Deck not found")
-    update_deck(deck_id, name, description)
+
+    update_deck(
+        deck_id,
+        name,
+        description,
+        front_language,
+        back_language
+    )
 
     return RedirectResponse(
         url=f"/decks/{deck_id}",
@@ -77,9 +104,16 @@ def save_deck(
 @app.post("/decks")
 def add_deck(
     name: str = Form(...),
-    description: str = Form("")
+    description: str = Form(""),
+    front_language: str = Form(...),
+    back_language: str = Form(...)
 ):
-    create_deck(name, description)
+    create_deck(
+        name,
+        description,
+        front_language,
+        back_language
+    )
 
     return RedirectResponse(url="/", status_code=303)
 
