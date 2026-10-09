@@ -6,7 +6,7 @@
     <title>Study - T2Speech</title>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body>
+<body data-deck-url="/decks/{{ deck[0] }}">
     <div class="app-shell">
         <aside class="sidebar">
             <a class="brand" href="/">T2Speech</a>
@@ -35,18 +35,31 @@
                 <button class="button-primary" id="reveal-button" type="button">
                     Reveal answer
                 </button>
+            <form
+    id="rating-actions"
+    action="/study/{{ session.id }}/rate"
+    method="post"
+    hidden
+>
+    <input
+        id="revealed-input"
+        type="hidden"
+        name="revealed"
+        value="false"
+    >
+
+    <button class="button-secondary" type="submit" name="rating" value="again">
+        Again
+    </button>
+
+    <button class="button-primary" type="submit" name="rating" value="good">
+        Good
+    </button>
+</form>
             </section>
         </main>
     </div>
 
-    <script>
-        const revealButton = document.getElementById("reveal-button");
-        const answer = document.getElementById("answer");
-
-        revealButton.addEventListener("click", () => {
-            answer.hidden = false;
-            revealButton.hidden = true;
-        });
-    </script>
+    <script src="/static/js/study.js" defer></script>
 </body>
 </html>

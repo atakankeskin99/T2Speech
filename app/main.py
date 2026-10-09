@@ -18,6 +18,7 @@ get_active_study_session,
 get_study_session_state,
 ActiveStudySessionExists,
 create_study_session,
+rate_current_study_card,
 
 )
 
@@ -282,17 +283,48 @@ def study_session(request: Request, session_id: int):
     session_state = get_study_session_state(session_id)
 
     if session_state is None:
-        raise HTTPException(status_code=404, detail="Study session not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Study session not found"
+        )
+
+    deck = get_deck(session_state["deck_id"])
+
+    if deck is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Deck not found"
+        )
 
     card = session_state["current_card"]
 
     if card is None:
-        return RedirectResponse(
-            url=f"/decks/{session_state['deck_id']}",
-            status_code=303
+        return templates.TemplateResponse(
+            request=request,
+            name="study_complete.html",
+            context={
+                "deck": deck,
+                "session": session_state
+            }
         )
 
-    deck = get_deck(session_state["deck_id"])
+    if session_state["reverse"]:
+        front_text = card[3]
+        back_text = card[2]
+    else:
+        front_text = card[2]
+        back_text = card[3]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="study.html",
+        context={
+            "deck": deck,
+            "session": session_state,
+            "front_text": front_text,
+            "back_text": back_text
+        }
+    )
 
     if deck is None:
         raise HTTPException(status_code=404, detail="Deck not found")
@@ -313,4 +345,37 @@ def study_session(request: Request, session_id: int):
             "front_text": front_text,
             "back_text": back_text
         }
+    )
+
+@app.post("/study/{session_id}/rate")
+def rate_study_card(
+    session_id: int,
+    rating: str = Form(...),
+    revealed: bool = Form(False)
+):
+    if rating not in {"again", "good"}:
+        raise HTTPException(status_code=400, detail="Invalid rating")
+
+    if not revealed:
+        raise HTTPException(
+            status_code=400,
+            detail="Reveal the answer before rating the card"
+        )
+
+    session_state = get_study_session_state(session_id)
+
+    if session_state is None:
+        raise HTTPException(status_code=404, detail="Study session not found")
+
+    if session_state["current_card"] is None:
+        return RedirectResponse(
+            url=f"/decks/{session_state['deck_id']}",
+            status_code=303
+        )
+
+    rate_current_study_card(session_id, rating)
+
+    return RedirectResponse(
+        url=f"/study/{session_id}",
+        status_code=303
     )

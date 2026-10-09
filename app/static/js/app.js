@@ -1,3 +1,4 @@
+
 const deleteForms = document.querySelectorAll(".delete-deck-form");
 const deleteDialog = document.querySelector("#delete-deck-dialog");
 const skipCheckbox = document.querySelector("#skip-delete-confirmation");

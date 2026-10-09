@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study complete - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/decks/{{ deck[0] }}">Back to deck</a>
+
+            <section class="study-card">
+                <h1>Session complete</h1>
+                <p>{{ deck[1] }} You completed all the cards in your deck.</p>
+                <p>{{ session.good_count }} / {{ session.total_cards }} cards completed</p>
+
+                <a class="button-primary" href="/decks/{{ deck[0] }}">
+                    Return to deck
+                </a>
+            </section>
+        </main>
+    </div>
+    <script>
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            window.location.href = "/decks/{{ deck[0] }}";
+        }
+    });
+</script>
+</body>
+</html>
