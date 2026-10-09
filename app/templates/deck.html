@@ -31,6 +31,18 @@
     <p class="deck-description">{{ deck[2] }}</p>
 </header>
 
+    <section class="study-entry-section">
+    <h2>Study</h2>
+
+    {% if active_session %}
+    <p>An active study session exists for this deck.</p>
+    {% endif %}
+
+    <a
+        class="button-primary"
+        href="/decks/{{ deck[0] }}/study/setup"
+    >Study this deck</a>
+</section>
     <section class="card-create-section" aria-labelledby="add-card-heading">
         <h2 id="add-card-heading">Add a card</h2>
 

@@ -13,7 +13,10 @@ get_card,
 update_card,
 delete_card,
 delete_deck,
-update_deck, 
+update_deck,
+get_active_study_session,
+ActiveStudySessionExists,
+create_study_session,
 
 )
 
@@ -55,12 +58,17 @@ def read_deck(request: Request, deck_id: int):
     deck = get_deck(deck_id)
     if deck is None:    
         raise HTTPException(status_code=404, detail="Deck not found")
-    cards = get_cards(deck_id)     
+    cards = get_cards(deck_id)
+    active_session = get_active_study_session(deck_id)
 
     return templates.TemplateResponse(
         request=request,
         name="deck.html",
-        context={"deck": deck, "cards": cards}
+        context={
+    "deck": deck,
+    "cards": cards,
+    "active_session": active_session
+}
     )
 
 @app.get("/decks/{deck_id}/edit", response_class=HTMLResponse)
@@ -186,3 +194,84 @@ def remove_deck(deck_id: int):
     delete_deck(deck_id)
 
     return RedirectResponse(url="/", status_code=303)
+
+@app.get(
+    "/decks/{deck_id}/study/setup",
+    response_class=HTMLResponse
+)
+def setup_study(
+    request: Request,
+    deck_id: int,
+    session_created: bool = False
+):
+    deck = get_deck(deck_id)
+
+    if deck is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+
+    cards = get_cards(deck_id)
+    active_session = get_active_study_session(deck_id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="study_setup.html",
+        context={
+            "deck": deck,
+            "total_cards": len(cards),
+            "active_session": active_session,
+            "confirm_replace": False,
+            "shuffle": True,
+            "reverse": False,
+            "session_created": session_created
+        }
+    )
+
+@app.post("/decks/{deck_id}/study/start")
+def start_study(
+    request: Request,
+    deck_id: int,
+    shuffle: bool = Form(False),
+    reverse: bool = Form(False),
+    replace_active: bool = Form(False)
+):
+    deck = get_deck(deck_id)
+
+    if deck is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+
+    cards = get_cards(deck_id)
+
+    if not cards:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot start a session with an empty deck"
+        )
+
+    try:
+        create_study_session(
+            deck_id,
+            shuffle=shuffle,
+            reverse=reverse,
+            replace_active=replace_active
+        )
+    except ActiveStudySessionExists:
+        active_session = get_active_study_session(deck_id)
+
+        return templates.TemplateResponse(
+            request=request,
+            name="study_setup.html",
+            context={
+                "deck": deck,
+                "total_cards": len(cards),
+                "active_session": active_session,
+                "confirm_replace": True,
+                "shuffle": shuffle,
+                "reverse": reverse,
+                "session_created": False
+            }
+        )
+
+    return RedirectResponse(
+        url=f"/decks/{deck_id}/study/setup?session_created=true",
+        status_code=303
+    )

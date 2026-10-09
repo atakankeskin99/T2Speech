@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Setup - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/decks/{{ deck[0] }}">Back to deck</a>
+
+            <header class="page-header">
+                <h1>Study setup</h1>
+                <p>{{ deck[1] }} · {{ total_cards }} cards</p>
+            </header>
+
+            {% if session_created %}
+<p class="empty-state">Study session created.</p>
+{% endif %}
+
+{% if active_session and not confirm_replace %}
+<p class="empty-state">
+    An active session exists. Starting another session will ask for confirmation.
+</p>
+{% endif %}
+
+{% if confirm_replace %}
+<p class="empty-state">
+    This deck already has an active session. Replace it with a new session?
+</p>
+
+<form action="/decks/{{ deck[0] }}/study/start" method="post">
+    <input
+        type="hidden"
+        name="shuffle"
+        value="{{ 'true' if shuffle else 'false' }}"
+    >
+    <input
+        type="hidden"
+        name="reverse"
+        value="{{ 'true' if reverse else 'false' }}"
+    >
+    <input type="hidden" name="replace_active" value="true">
+
+    <button class="button-primary" type="submit">
+        Replace session and start new
+    </button>
+
+    <a class="button-secondary" href="/decks/{{ deck[0] }}">
+        Cancel
+    </a>
+</form>
+{% else %}
+<form
+    class="study-setup-form"
+    action="/decks/{{ deck[0] }}/study/start"
+    method="post"
+>
+    <div class="form-field">
+        <label>
+            <input
+                type="checkbox"
+                name="shuffle"
+                value="true"
+                {% if shuffle %}checked{% endif %}
+            >
+            Shuffle cards
+        </label>
+    </div>
+
+    <div class="form-field">
+        <label>
+            <input
+                type="checkbox"
+                name="reverse"
+                value="true"
+                {% if reverse %}checked{% endif %}
+            >
+            Reverse front and back
+        </label>
+    </div>
+
+    <button
+        class="button-primary"
+        type="submit"
+        {% if total_cards == 0 %}disabled{% endif %}
+    >
+        Start session
+    </button>
+</form>
+{% endif %} 
+        </main>
+    </div>
+</body>
+</html>
