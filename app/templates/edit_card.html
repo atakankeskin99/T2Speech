@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Edit Card - T2Speech</title>
+        <link rel="stylesheet" href="/static/css/app.css">
+    </head>
+    <body>
+        <div class="app-shell">
+            <aside class="sidebar">
+                <a class="brand" href="/">T2Speech</a>
+
+                <nav class="sidebar-nav" aria-label="Main navigation">
+                    <a class="nav-link is-active" href="/">Library</a>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                <a class="back-link" href="/decks/{{ card[1] }}">Back to deck</a>
+
+                <header class="page-header">
+                    <h1>Edit card</h1>
+                </header>
+
+                <section class="edit-card-section">
+                    <form
+                        class="edit-card-form"
+                        action="/cards/{{ card[0] }}"
+                        method="post"
+                    >
+                        <div class="form-field">
+                            <label for="front">Front</label>
+                            <input
+                                type="text"
+                                id="front"
+                                name="front"
+                                value="{{ card[2] }}"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="back">Back</label>
+                            <textarea
+                                id="back"
+                                name="back"
+                                required
+                            >{{ card[3] }}</textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="button-primary" type="submit">
+                                Save changes
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </body>
+</html>

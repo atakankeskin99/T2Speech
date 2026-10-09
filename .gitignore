@@ -1,0 +1,49 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# FastAPI / Uvicorn
+*.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model / büyük dosyalar (varsa)
+models/
+*.pth
+*.pt
+*.bin
+*.onnx
+
+# Test / cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# SQLite database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

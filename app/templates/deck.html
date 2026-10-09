@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Deck - T2Speech</title>
+        <link rel="stylesheet" href="/static/css/app.css">
+    </head>
+    <body>
+        <div class="app-shell">
+            <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+   <a class="back-link" href="/">← Back to decks</a>
+
+    <header class="page-header deck-header">
+    <div class="deck-heading-row">
+        <h1>{{ deck[1] }}</h1>
+        <a
+            class="button-deck-edit"
+            href="/decks/{{ deck[0] }}/edit"
+        >Edit deck</a>
+    </div>
+
+    <p class="deck-description">{{ deck[2] }}</p>
+</header>
+
+    <section class="card-create-section" aria-labelledby="add-card-heading">
+        <h2 id="add-card-heading">Add a card</h2>
+
+        <form
+            class="card-form"
+            action="/decks/{{ deck[0] }}/cards"
+            method="post"
+        >
+            <div class="form-field">
+                <label for="front">Front</label>
+                <input type="text" id="front" name="front" required>
+            </div>
+
+            <div class="form-field">
+                <label for="back">Back</label>
+                <textarea id="back" name="back" required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button class="button-primary" type="submit">Add card</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-list-section" aria-labelledby="cards-heading">
+        <h2 id="cards-heading">Cards</h2>
+
+        {% if cards %}
+        <ul class="card-list">
+            {% for card in cards %}
+            <li class="card-list-item">
+                <div class="card-content">
+                    <p class="card-front">{{ card[1] }}</p>
+                    <p class="card-back">{{ card[2] }}</p>
+                </div>
+
+                <div class="card-actions">
+                    <a
+                        class="button-secondary"
+                        href="/cards/{{ card[0] }}/edit"
+                    >Edit</a>
+
+                    <form
+                        class="delete-card-form"
+                        action="/cards/{{ card[0] }}/delete"
+                        method="post"
+                    >
+                        <button class="button-danger" type="submit">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No cards yet. Add your first card above.</p>
+        {% endif %}
+    </section>
+</main>
+    </div>
+    </body>
+</html>
