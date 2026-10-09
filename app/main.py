@@ -15,6 +15,7 @@ delete_card,
 delete_deck,
 update_deck,
 get_active_study_session,
+get_study_session_state,
 ActiveStudySessionExists,
 create_study_session,
 
@@ -248,7 +249,7 @@ def start_study(
         )
 
     try:
-        create_study_session(
+        session_id = create_study_session(
             deck_id,
             shuffle=shuffle,
             reverse=reverse,
@@ -272,6 +273,44 @@ def start_study(
         )
 
     return RedirectResponse(
-        url=f"/decks/{deck_id}/study/setup?session_created=true",
-        status_code=303
+    url=f"/study/{session_id}",
+    status_code=303
+)
+
+@app.get("/study/{session_id}", response_class=HTMLResponse)
+def study_session(request: Request, session_id: int):
+    session_state = get_study_session_state(session_id)
+
+    if session_state is None:
+        raise HTTPException(status_code=404, detail="Study session not found")
+
+    card = session_state["current_card"]
+
+    if card is None:
+        return RedirectResponse(
+            url=f"/decks/{session_state['deck_id']}",
+            status_code=303
+        )
+
+    deck = get_deck(session_state["deck_id"])
+
+    if deck is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+
+    if session_state["reverse"]:
+        front_text = card[3]
+        back_text = card[2]
+    else:
+        front_text = card[2]
+        back_text = card[3]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="study.html",
+        context={
+            "deck": deck,
+            "session": session_state,
+            "front_text": front_text,
+            "back_text": back_text
+        }
     )

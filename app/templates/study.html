@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/decks/{{ deck[0] }}">Back to deck</a>
+
+            <header class="page-header">
+                <h1>{{ deck[1] }}</h1>
+                <p>{{ session.good_count }} / {{ session.total_cards }} cards completed</p>
+            </header>
+
+            <section class="study-card">
+                <p>Front</p>
+                <div class="study-card-content">{{ front_text }}</div>
+
+                <div id="answer" hidden>
+                    <p>Back</p>
+                    <div class="study-card-content">{{ back_text }}</div>
+                </div>
+
+                <button class="button-primary" id="reveal-button" type="button">
+                    Reveal answer
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const revealButton = document.getElementById("reveal-button");
+        const answer = document.getElementById("answer");
+
+        revealButton.addEventListener("click", () => {
+            answer.hidden = false;
+            revealButton.hidden = true;
+        });
+    </script>
+</body>
+</html>
