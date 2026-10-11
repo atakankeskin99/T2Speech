@@ -2,6 +2,8 @@ const revealButton = document.getElementById("reveal-button");
 const answer = document.getElementById("answer");
 const ratingActions = document.getElementById("rating-actions");
 const revealedInput = document.getElementById("revealed-input");
+const autoSpeakSelect = document.getElementById("auto-speak");
+const speechRateInput = document.getElementById("speech-rate");
 
 const againButton = document.querySelector(
     'button[name="rating"][value="again"]'
@@ -24,9 +26,12 @@ let lastSpeech = null;
 
 if (speechAvailable) {
     window.speechSynthesis.addEventListener("voiceschanged", () => {
-        availableVoices = window.speechSynthesis.getVoices();
+         availableVoices = window.speechSynthesis.getVoices();
+        tryInitialAutoSpeak();
     });
 }
+
+
 
 function setAudioStatus(message) {
     audioStatus.textContent = message;
@@ -57,22 +62,28 @@ function findLocalVoice(language) {
 }
 
 function speakText(text, language) {
-        if (!speechAvailable) {
-        setAudioStatus("Text-to-speech is unavailable. You can continue studying.");
+    if (!speechAvailable) {
+        setAudioStatus(
+            "Text-to-speech is unavailable. You can continue studying."
+        );
         return;
     }
 
     availableVoices = window.speechSynthesis.getVoices();
 
     if (availableVoices.length === 0) {
-        setAudioStatus("Speech voices are still loading. Please try again shortly.");
+        setAudioStatus(
+            "Speech voices are still loading. Please try again shortly."
+        );
         return;
     }
 
     const voice = findLocalVoice(language);
 
     if (!voice) {
-        setAudioStatus("No local voice is available for this language. You can continue studying.");
+        setAudioStatus(
+            "No local voice is available for this language. You can continue studying."
+        );
         return;
     }
 
@@ -82,7 +93,7 @@ function speakText(text, language) {
     const utterance = new SpeechSynthesisUtterance(text.trim());
     utterance.voice = voice;
     utterance.lang = language;
-    utterance.rate = 1.0;
+    utterance.rate = Number(speechRateInput.value);
 
     utterance.onerror = () => {
         setAudioStatus("Audio playback failed. You can continue studying.");
@@ -92,11 +103,40 @@ function speakText(text, language) {
     window.speechSynthesis.speak(utterance);
 }
 
+let initialAutoSpeakStarted = false;
+let voiceWaitAttempts = 0;
+
+function tryInitialAutoSpeak() {
+    if (initialAutoSpeakStarted || autoSpeakSelect.value === "off") {
+        return;
+    }
+
+    availableVoices = window.speechSynthesis.getVoices();
+
+    if (availableVoices.length === 0 && voiceWaitAttempts < 20) {
+        voiceWaitAttempts += 1;
+        window.setTimeout(tryInitialAutoSpeak, 100);
+        return;
+    }
+
+    initialAutoSpeakStarted = true;
+
+    speakText(
+        frontText.textContent,
+        speakFrontButton.dataset.language
+    );
+}
+
 revealButton.addEventListener("click", () => {
     answer.hidden = false;
     revealButton.hidden = true;
     ratingActions.hidden = false;
     revealedInput.value = "true";
+
+if (autoSpeakSelect.value === "front_back") {
+    speakText(backText.textContent, speakBackButton.dataset.language);
+}
+
 });
 
 speakFrontButton.addEventListener("click", () => {
@@ -153,3 +193,10 @@ document.addEventListener("keydown", event => {
         goodButton.click();
     }
 });
+
+if (
+    autoSpeakSelect.value === "front" ||
+    autoSpeakSelect.value === "front_back"
+) {
+    tryInitialAutoSpeak();
+}

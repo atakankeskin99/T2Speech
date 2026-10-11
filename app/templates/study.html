@@ -31,6 +31,73 @@
     <span>{{ session.good_count }} / {{ session.total_cards }} cards completed</span>
 </div>
             </header>
+            <section class="study-settings">
+    <h2>Session settings</h2>
+
+    <form
+        class="study-settings-form"
+        action="/study/{{ session.id }}/settings"
+        method="post"
+    >
+        <div class="form-field">
+            <label for="auto-speak">Auto-speak</label>
+            <select id="auto-speak" name="auto_speak">
+                <option value="off" {% if session.auto_speak == "off" %}selected{% endif %}>
+                    Off
+                </option>
+                <option value="front" {% if session.auto_speak == "front" %}selected{% endif %}>
+                    Front only
+                </option>
+                <option value="front_back" {% if session.auto_speak == "front_back" %}selected{% endif %}>
+                    Front + Back
+                </option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label>
+                <input
+                    type="checkbox"
+                    name="auto_reveal"
+                    value="true"
+                    {% if session.auto_reveal %}checked{% endif %}
+                >
+                Auto-reveal answer
+            </label>
+        </div>
+
+        <div class="form-field">
+            <label for="reveal-delay">Reveal delay (seconds)</label>
+            <input
+                id="reveal-delay"
+                type="number"
+                name="reveal_delay_seconds"
+                min="1"
+                step="1"
+                value="{{ session.reveal_delay_seconds }}"
+                required
+            >
+        </div>
+
+        <div class="form-field">
+            <label for="speech-rate">Speech rate</label>
+            <input
+                id="speech-rate"
+                type="number"
+                name="speech_rate"
+                min="0.1"
+                max="10"
+                step="0.1"
+                value="{{ session.speech_rate }}"
+                required
+            >
+        </div>
+
+        <button class="button-secondary" type="submit">
+            Save session settings
+        </button>
+    </form>
+</section>
 
 <section class="study-card">
     <p>Front</p>

@@ -19,6 +19,7 @@ get_study_session_state,
 ActiveStudySessionExists,
 create_study_session,
 rate_current_study_card,
+update_study_session_settings,
 
 )
 
@@ -360,6 +361,48 @@ def study_session(request: Request, session_id: int):
 
         }
     )
+
+@app.post("/study/{session_id}/settings")
+def save_study_session_settings(
+    session_id: int,
+    auto_reveal: bool = Form(False),
+    reveal_delay_seconds: int = Form(5),
+    auto_speak: str = Form("off"),
+    speech_rate: float = Form(1.0)
+):
+    session_state = get_study_session_state(session_id)
+
+    if session_state is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Study session not found"
+        )
+
+    if session_state["status"] != "active":
+        raise HTTPException(
+            status_code=409,
+            detail="Study session is not active"
+        )
+
+    try:
+        update_study_session_settings(
+            session_id=session_id,
+            auto_reveal=auto_reveal,
+            reveal_delay_seconds=reveal_delay_seconds,
+            auto_speak=auto_speak,
+            speech_rate=speech_rate
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        ) from error
+
+    return RedirectResponse(
+        url=f"/study/{session_id}",
+        status_code=303
+    )
+
 
 @app.post("/study/{session_id}/rate")
 def rate_study_card(
