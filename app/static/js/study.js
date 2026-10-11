@@ -12,6 +12,12 @@ const goodButton = document.querySelector(
     'button[name="rating"][value="good"]'
 );
 
+const autoRevealCheckbox = document.querySelector(
+    'input[name="auto_reveal"]'
+);
+const revealDelayInput = document.getElementById("reveal-delay");
+let autoRevealTimer = null;
+
 const speakFrontButton = document.getElementById("speak-front");
 const speakBackButton = document.getElementById("speak-back");
 const frontText = document.getElementById("front-text");
@@ -59,6 +65,35 @@ function findLocalVoice(language) {
                 voice.lang.toLowerCase().split("-")[0] === baseLanguage
         )
     );
+}
+
+function clearAutoRevealTimer() {
+    if (autoRevealTimer !== null) {
+        window.clearTimeout(autoRevealTimer);
+        autoRevealTimer = null;
+    }
+}
+
+function scheduleAutoReveal() {
+    clearAutoRevealTimer();
+
+    if (!autoRevealCheckbox?.checked || !answer.hidden) {
+        return;
+    }
+
+    const delaySeconds = Number(revealDelayInput.value);
+
+    if (!Number.isFinite(delaySeconds) || delaySeconds < 1) {
+        return;
+    }
+
+    autoRevealTimer = window.setTimeout(() => {
+        autoRevealTimer = null;
+
+        if (answer.hidden) {
+            revealButton.click();
+        }
+    }, delaySeconds * 1000);
 }
 
 function speakText(text, language) {
@@ -128,6 +163,7 @@ function tryInitialAutoSpeak() {
 }
 
 revealButton.addEventListener("click", () => {
+    clearAutoRevealTimer();
     answer.hidden = false;
     revealButton.hidden = true;
     ratingActions.hidden = false;
@@ -148,7 +184,10 @@ speakBackButton.addEventListener("click", () => {
 });
 
 ratingActions.addEventListener("submit", stopSpeech);
-window.addEventListener("pagehide", stopSpeech);
+window.addEventListener("pagehide", () => {
+    clearAutoRevealTimer();
+    stopSpeech();
+});
 
 document.addEventListener("keydown", event => {
     if (event.repeat || event.ctrlKey || event.altKey || event.metaKey) {
@@ -200,3 +239,5 @@ if (
 ) {
     tryInitialAutoSpeak();
 }
+
+scheduleAutoReveal();
