@@ -29,8 +29,12 @@
 
 {% if active_session and not confirm_replace %}
 <p class="empty-state">
-    An active session exists. Starting another session will ask for confirmation.
+    An active session exists. You can resume it or start a new session.
 </p>
+
+<a class="button-primary" href="/study/{{ active_session[0] }}">
+    Resume session
+</a>
 {% endif %}
 
 {% if confirm_replace %}
@@ -55,7 +59,7 @@
         Replace session and start new
     </button>
 
-    <a class="button-secondary" href="/decks/{{ deck[0] }}">
+    <a class="button-secondary" href="/decks/{{ deck[0] }}/study/setup">
         Cancel
     </a>
 </form>

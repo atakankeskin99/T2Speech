@@ -549,3 +549,35 @@ button:focus-visible{
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }
+
+.study-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 520px;
+}
+
+.study-progress {
+    flex: 1;
+    min-width: 0;
+    height: 8px;
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.study-progress::-webkit-progress-bar {
+    background-color: #e5e7eb;
+    border-radius: 999px;
+}
+
+.study-progress::-webkit-progress-value {
+    background-color: #3b82f6;
+    border-radius: 999px;
+}
+
+.study-progress::-moz-progress-bar {
+    background-color: #3b82f6;
+    border-radius: 999px;
+}

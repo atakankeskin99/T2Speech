@@ -311,9 +311,13 @@ def study_session(request: Request, session_id: int):
     if session_state["reverse"]:
         front_text = card[3]
         back_text = card[2]
+        front_language = deck[5]
+        back_language = deck[4]
     else:
         front_text = card[2]
         back_text = card[3]
+        front_language = deck[4]
+        back_language = deck[5]
 
     return templates.TemplateResponse(
         request=request,
@@ -322,7 +326,9 @@ def study_session(request: Request, session_id: int):
             "deck": deck,
             "session": session_state,
             "front_text": front_text,
-            "back_text": back_text
+            "back_text": back_text,
+            "front_language": front_language,
+            "back_language": back_language
         }
     )
 
@@ -332,18 +338,26 @@ def study_session(request: Request, session_id: int):
     if session_state["reverse"]:
         front_text = card[3]
         back_text = card[2]
+        front_language = card[5]
+        back_language = card[4]
     else:
         front_text = card[2]
         back_text = card[3]
+        front_language = card[4]
+        back_language = card[5]
 
     return templates.TemplateResponse(
         request=request,
         name="study.html",
         context={
             "deck": deck,
+            "card": card,
             "session": session_state,
             "front_text": front_text,
-            "back_text": back_text
+            "back_text": back_text,
+            "front_language": front_language,
+            "back_language": back_language,
+
         }
     )
 

@@ -20,43 +20,77 @@
 
             <header class="page-header">
                 <h1>{{ deck[1] }}</h1>
-                <p>{{ session.good_count }} / {{ session.total_cards }} cards completed</p>
+                <div class="study-progress-row">
+    <progress
+        class="study-progress"
+        value="{{ session.good_count }}"
+        max="{{ session.total_cards }}"
+        aria-label="Session progress"
+    ></progress>
+
+    <span>{{ session.good_count }} / {{ session.total_cards }} cards completed</span>
+</div>
             </header>
 
-            <section class="study-card">
-                <p>Front</p>
-                <div class="study-card-content">{{ front_text }}</div>
+<section class="study-card">
+    <p>Front</p>
+    <div id="front-text" class="study-card-content">
+        {{ front_text }}
+    </div>
 
-                <div id="answer" hidden>
-                    <p>Back</p>
-                    <div class="study-card-content">{{ back_text }}</div>
-                </div>
-
-                <button class="button-primary" id="reveal-button" type="button">
-                    Reveal answer
-                </button>
-            <form
-    id="rating-actions"
-    action="/study/{{ session.id }}/rate"
-    method="post"
-    hidden
->
-    <input
-        id="revealed-input"
-        type="hidden"
-        name="revealed"
-        value="false"
+    <button
+        class="button-secondary"
+        id="speak-front"
+        type="button"
+        data-language="{{ front_language }}"
     >
-
-    <button class="button-secondary" type="submit" name="rating" value="again">
-        Again
+        Play front
     </button>
 
-    <button class="button-primary" type="submit" name="rating" value="good">
-        Good
+    <p id="audio-status" role="status" aria-live="polite"></p>
+
+    <button class="button-primary" id="reveal-button" type="button">
+        Reveal answer
     </button>
-</form>
-            </section>
+
+    <div id="answer" hidden>
+        <p>Back</p>
+        <div id="back-text" class="study-card-content">
+            {{ back_text }}
+        </div>
+
+        <button
+            class="button-secondary"
+            id="speak-back"
+            type="button"
+            data-language="{{ back_language }}"
+        >
+            Play back
+        </button>
+    </div>
+
+    <form
+        id="rating-actions"
+        action="/study/{{ session.id }}/rate"
+        method="post"
+        hidden
+    >
+        <input
+            id="revealed-input"
+            type="hidden"
+            name="revealed"
+            value="false"
+        >
+
+        <button class="button-secondary" type="submit" name="rating" value="again">
+            Again
+        </button>
+
+        <button class="button-primary" type="submit" name="rating" value="good">
+            Good
+        </button>
+    </form>
+</section>
         </main>
     </div>
 
