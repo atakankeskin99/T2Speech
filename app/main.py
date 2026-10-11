@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Request, Form, HTTPException, File, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from urllib.parse import quote
+from fastapi.responses import Response
+from app.services.csv_export import build_csv_export
 from app.services.csv_import import (
     MAX_FILE_SIZE_BYTES,
     analyze_import,
@@ -379,6 +382,33 @@ def read_deck(request: Request, deck_id: int):
     "active_session": active_session
 }
     )
+@app.get("/decks/{deck_id}/export.csv")
+def export_deck_csv(deck_id: int):
+    deck = get_deck(deck_id)
+
+    if deck is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+
+    cards = get_cards(deck_id)
+    front_back_pairs = tuple(
+        (card[1], card[2])
+        for card in cards
+    )
+    csv_content = build_csv_export(front_back_pairs)
+
+    encoded_filename = quote(f"{deck[1]}.csv", safe="")
+
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="deck-{deck_id}.csv"; '
+                f"filename*=UTF-8''{encoded_filename}"
+            )
+        },
+    )
+
 
 @app.get("/decks/{deck_id}/edit", response_class=HTMLResponse)
 def edit_deck(request: Request, deck_id: int):
