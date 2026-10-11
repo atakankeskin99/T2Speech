@@ -18,7 +18,7 @@ class ParsedCsv:
     delimiter: str
 
 
-def parse_csv(file_bytes: bytes) -> ParsedCsv:
+def parse_csv(file_bytes: bytes, *, has_header: bool = True) -> ParsedCsv:
     if not file_bytes:
         raise CsvImportError("The CSV file is empty.")
 
@@ -49,13 +49,20 @@ def parse_csv(file_bytes: bytes) -> ParsedCsv:
     )
 
     try:
-        headers = next(reader)
+        first_row = next(reader)
     except StopIteration as error:
-        raise CsvImportError("The CSV file has no header row.") from error
+        raise CsvImportError("The CSV file has no rows.") from error
     except csv.Error as error:
         raise CsvImportError("The CSV file format is invalid.") from error
 
     rows: list[tuple[str, ...]] = []
+
+    if has_header:
+        raw_headers = first_row
+    else:
+        # Headerless files keep their first record as card data.
+        raw_headers = []
+        rows.append(tuple(first_row))
 
     try:
         for row in reader:
@@ -67,8 +74,20 @@ def parse_csv(file_bytes: bytes) -> ParsedCsv:
     except csv.Error as error:
         raise CsvImportError("The CSV file format is invalid.") from error
 
+    if has_header:
+        headers = tuple(header.strip() for header in raw_headers)
+    else:
+        column_count = max((len(row) for row in rows), default=0)
+        headers = tuple(
+            f"Column {index + 1}"
+            for index in range(column_count)
+        )
+
+    if not headers:
+        raise CsvImportError("The CSV file has no columns.")
+
     return ParsedCsv(
-        headers=tuple(header.strip() for header in headers),
+        headers=headers,
         rows=tuple(rows),
         delimiter=dialect.delimiter,
     )
@@ -98,6 +117,7 @@ def analyze_import(
     front_index: int,
     back_index: int,
     existing_cards: tuple[tuple[str, str], ...] = (),
+    has_header: bool = True,
 ) -> ImportAnalysis:
     column_count = len(parsed_csv.headers)
 
@@ -123,7 +143,10 @@ def analyze_import(
     invalid_rows = 0
     empty_rows = 0
 
-    for row_number, row in enumerate(parsed_csv.rows, start=2):
+    start_row = 2 if has_header else 1
+
+    for row_number, row in enumerate(parsed_csv.rows, start=start_row):
+
         front = row[front_index].strip() if front_index < len(row) else ""
         back = row[back_index].strip() if back_index < len(row) else ""
 

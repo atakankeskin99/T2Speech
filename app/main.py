@@ -1,7 +1,19 @@
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from app.services.csv_import import (
+    MAX_FILE_SIZE_BYTES,
+    analyze_import,
+    parse_csv,
+)
+from app.services.import_staging import (
+    delete_staged_csv,
+    load_staged_csv,
+    save_staged_csv,
+
+)
+
 from app.database import (
 initialize_database,
 get_decks,
@@ -20,6 +32,7 @@ ActiveStudySessionExists,
 create_study_session,
 rate_current_study_card,
 update_study_session_settings,
+import_cards_transaction,
 
 )
 
@@ -55,6 +68,299 @@ def read_root(request: Request):
     name="index.html",
     context={"decks": decks, "languages": LANGUAGES}
 )
+
+@app.get("/imports/csv", response_class=HTMLResponse)
+def select_csv_import(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="import_csv_select.html",
+        context={},
+    )
+
+@app.post("/imports/csv/configure", response_class=HTMLResponse)
+async def configure_csv_import(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    filename = file.filename or ""
+
+    try:
+        if not filename.lower().endswith(".csv"):
+            raise ValueError("Please select a CSV file.")
+
+        file_bytes = await file.read(MAX_FILE_SIZE_BYTES + 1)
+        parsed_csv = parse_csv(file_bytes)
+        token = save_staged_csv(file_bytes)
+
+    except ValueError as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="import_csv_select.html",
+            context={"error": str(error)},
+            status_code=400,
+        )
+
+    finally:
+        await file.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="import_csv_configure.html",
+        context={
+            "filename": filename,
+            "token": token,
+            "headers": parsed_csv.headers,
+            "data_row_count": len(parsed_csv.rows),
+            "default_front_index": 0,
+            "default_back_index": (
+                1 if len(parsed_csv.headers) > 1 else None
+
+            ),
+            "decks": get_decks(),
+            "languages": LANGUAGES,
+        },
+    )
+
+@app.post("/imports/csv/preview", response_class=HTMLResponse)
+def preview_csv_import(
+    request: Request,
+    token: str = Form(...),
+    filename: str = Form("CSV file"),
+    front_index: int = Form(...),
+    back_index: int = Form(...),
+    destination: str = Form(...),
+    new_deck_name: str = Form(""),
+    description: str = Form(""),
+    front_language: str = Form(""),
+    back_language: str = Form(""),
+    deck_id: str = Form(""),
+    has_header: bool = Form(False),
+):
+    try:
+        file_bytes = load_staged_csv(token)
+        parsed_csv = parse_csv(file_bytes, has_header=has_header)
+
+    except (FileNotFoundError, ValueError) as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="import_csv_select.html",
+            context={"error": str(error)},
+            status_code=400,
+        )
+
+    selected_deck_id = None
+    destination_name = ""
+    existing_cards = ()
+
+    if destination == "new":
+        if not new_deck_name.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Enter a name for the new deck.",
+            )
+
+        available_languages = {code for code, _ in LANGUAGES}
+        if (
+            front_language not in available_languages
+            or back_language not in available_languages
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Choose a language for both sides.",
+            )
+
+        destination_name = new_deck_name.strip()
+
+    elif destination == "existing":
+        try:
+            selected_deck_id = int(deck_id)
+        except ValueError as error:
+            raise HTTPException(
+                status_code=400,
+                detail="Choose an existing deck.",
+            ) from error
+
+        deck = get_deck(selected_deck_id)
+        if deck is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Destination deck not found.",
+            )
+
+        destination_name = deck[1]
+        existing_cards = tuple(
+            (card[1], card[2])
+            for card in get_cards(selected_deck_id)
+        )
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Choose an import destination.",
+        )
+
+    try:
+        analysis = analyze_import(
+            parsed_csv,
+            front_index=front_index,
+            back_index=back_index,
+            existing_cards=existing_cards,
+            has_header=has_header,
+        )
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    return templates.TemplateResponse(
+        request=request,
+        name="import_csv_preview.html",
+        context={
+            "filename": filename,
+            "token": token,
+            "analysis": analysis,
+            "destination": destination,
+            "destination_name": destination_name,
+            "new_deck_name": new_deck_name,
+            "description": description,
+            "front_language": front_language,
+            "back_language": back_language,
+            "deck_id": selected_deck_id or "",
+            "front_index": front_index,
+            "back_index": back_index,
+        },
+    )
+
+@app.post("/imports/csv/confirm", response_class=HTMLResponse)
+def confirm_csv_import(
+    request: Request,
+    token: str = Form(...),
+    filename: str = Form("CSV file"),
+    destination: str = Form(...),
+    new_deck_name: str = Form(""),
+    description: str = Form(""),
+    front_language: str = Form(""),
+    back_language: str = Form(""),
+    deck_id: str = Form(""),
+    front_index: int = Form(...),
+    back_index: int = Form(...),
+    has_header: bool = Form(False),
+):
+    try:
+        file_bytes = load_staged_csv(token)
+        parsed_csv = parse_csv(file_bytes, has_header=has_header)
+    except (FileNotFoundError, ValueError) as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="import_csv_select.html",
+            context={"error": str(error)},
+            status_code=400,
+        )
+
+    selected_deck_id = None
+    destination_name = ""
+    existing_cards = ()
+
+    if destination == "new":
+        if not new_deck_name.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Enter a name for the new deck.",
+            )
+
+        available_languages = {code for code, _ in LANGUAGES}
+        if (
+            front_language not in available_languages
+            or back_language not in available_languages
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Choose a language for both sides.",
+            )
+
+        destination_name = new_deck_name.strip()
+
+    elif destination == "existing":
+        try:
+            selected_deck_id = int(deck_id)
+        except ValueError as error:
+            raise HTTPException(
+                status_code=400,
+                detail="Choose an existing deck.",
+            ) from error
+
+        deck = get_deck(selected_deck_id)
+        if deck is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Destination deck not found.",
+            )
+
+        destination_name = deck[1]
+        existing_cards = tuple(
+            (card[1], card[2])
+            for card in get_cards(selected_deck_id)
+        )
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Choose an import destination.",
+        )
+
+    try:
+        analysis = analyze_import(
+            parsed_csv,
+            front_index=front_index,
+            back_index=back_index,
+            existing_cards=existing_cards,
+            has_header=has_header,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    cards_to_import = tuple(
+        (row.front, row.back)
+        for row in analysis.rows
+        if row.status == "ready"
+    )
+
+    if not cards_to_import:
+        raise HTTPException(
+            status_code=409,
+            detail="There are no new cards to import.",
+        )
+
+    try:
+        destination_deck_id, imported_count = import_cards_transaction(
+            cards_to_import,
+            deck_id=selected_deck_id,
+            new_deck_name=(
+                new_deck_name.strip()
+                if destination == "new"
+                else None
+            ),
+            description=description,
+            front_language=front_language,
+            back_language=back_language,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+    delete_staged_csv(token)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="import_csv_summary.html",
+        context={
+            "filename": filename,
+            "deck_id": destination_deck_id,
+            "deck_name": destination_name,
+            "imported_count": imported_count,
+            "skipped_at_commit": len(cards_to_import) - imported_count,
+            "analysis": analysis,
+        },
+    )
+
 
 @app.get("/decks/{deck_id}", response_class=HTMLResponse)
 def read_deck(request: Request, deck_id: int):

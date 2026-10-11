@@ -70,6 +70,18 @@ class ParseCsvTests(unittest.TestCase):
         with self.assertRaises(CsvImportError):
             parse_csv(content)
 
+    def test_keeps_first_row_as_data_when_file_has_no_header(self):
+        parsed = parse_csv(
+        b"a,b\nc,d\ne,f",
+        has_header=False,
+)
+        self.assertEqual(parsed.headers, ("Column 1", "Column 2"))
+        self.assertEqual(
+            parsed.rows,
+            (("a", "b"), ("c", "d"), ("e", "f")),
+        )
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -149,6 +149,22 @@ class AnalyzeImportTests(unittest.TestCase):
                 back_index=2,
             )
 
+    def test_row_number_starts_at_one_without_header(self):
+        parsed = ParsedCsv(
+            headers=("Column 1", "Column 2"),
+            rows=(("a", "b"),),
+            delimiter=",",
+        )
+
+        analysis = analyze_import(
+            parsed,
+            front_index=0,
+            back_index=1,
+            has_header=False,
+        )
+
+        self.assertEqual(analysis.rows[0].row_number, 1)
+
 
 if __name__ == "__main__":
     unittest.main()
