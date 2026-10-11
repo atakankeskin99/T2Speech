@@ -72,3 +72,107 @@ def parse_csv(file_bytes: bytes) -> ParsedCsv:
         rows=tuple(rows),
         delimiter=dialect.delimiter,
     )
+
+
+@dataclass(frozen=True)
+class ImportRowResult:
+    row_number: int
+    front: str
+    back: str
+    status: str
+    reason: str = ""
+
+
+@dataclass(frozen=True)
+class ImportAnalysis:
+    rows: tuple[ImportRowResult, ...]
+    total_rows: int
+    ready_to_import: int
+    already_in_deck: int
+    duplicates_in_file: int
+    invalid_rows: int
+    empty_rows: int
+
+def analyze_import(
+    parsed_csv: ParsedCsv,
+    front_index: int,
+    back_index: int,
+    existing_cards: tuple[tuple[str, str], ...] = (),
+) -> ImportAnalysis:
+    column_count = len(parsed_csv.headers)
+
+    if front_index == back_index:
+        raise CsvImportError("Front and Back must use different columns.")
+
+    if not 0 <= front_index < column_count:
+        raise CsvImportError("The selected Front column is invalid.")
+
+    if not 0 <= back_index < column_count:
+        raise CsvImportError("The selected Back column is invalid.")
+
+    existing_pairs = {
+        (front.strip(), back.strip())
+        for front, back in existing_cards
+    }
+    seen_in_file: set[tuple[str, str]] = set()
+    results: list[ImportRowResult] = []
+
+    ready_to_import = 0
+    already_in_deck = 0
+    duplicates_in_file = 0
+    invalid_rows = 0
+    empty_rows = 0
+
+    for row_number, row in enumerate(parsed_csv.rows, start=2):
+        front = row[front_index].strip() if front_index < len(row) else ""
+        back = row[back_index].strip() if back_index < len(row) else ""
+
+        if not front and not back:
+            status = "empty"
+            reason = "Empty row skipped."
+            empty_rows += 1
+
+        elif not front or not back:
+            status = "invalid"
+            reason = "Both Front and Back are required."
+            invalid_rows += 1
+
+        else:
+            pair = (front, back)
+
+            if pair in seen_in_file:
+                status = "duplicate_in_file"
+                reason = "This card already appears earlier in the file."
+                duplicates_in_file += 1
+
+            elif pair in existing_pairs:
+                status = "already_in_deck"
+                reason = "This card is already in the destination deck."
+                already_in_deck += 1
+
+            else:
+                status = "ready"
+                reason = ""
+                ready_to_import += 1
+
+            seen_in_file.add(pair)
+
+        results.append(
+            ImportRowResult(
+                row_number=row_number,
+                front=front,
+                back=back,
+                status=status,
+                reason=reason,
+            )
+        )
+
+    return ImportAnalysis(
+        rows=tuple(results),
+        total_rows=len(parsed_csv.rows),
+        ready_to_import=ready_to_import,
+        already_in_deck=already_in_deck,
+        duplicates_in_file=duplicates_in_file,
+        invalid_rows=invalid_rows,
+        empty_rows=empty_rows,
+    )
