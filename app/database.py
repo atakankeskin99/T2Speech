@@ -1,9 +1,10 @@
 import random
 import sqlite3
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATABASE_PATH = BASE_DIR / "data" / "decks.db"
+from app.paths import get_database_path
+
+
+DATABASE_PATH = get_database_path()
 
 def get_connection():
     connection = sqlite3.connect(DATABASE_PATH)
@@ -11,6 +12,7 @@ def get_connection():
     return connection
 
 def initialize_database():
+    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = get_connection()
 
     try:

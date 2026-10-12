@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from urllib.parse import quote
 from fastapi.responses import Response
+from app.paths import get_resource_path
 from app.services.csv_export import build_csv_export
 from app.services.xlsx_export import build_xlsx_export
 from app.services.xlsx_import import get_xlsx_sheet_names
@@ -64,9 +65,13 @@ LANGUAGES = [
 ]
 
 initialize_database()
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount(
+    "/static",
+    StaticFiles(directory=str(get_resource_path("static"))),
+    name="static",
+)
 
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=str(get_resource_path("templates")))
 
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
