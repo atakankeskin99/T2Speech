@@ -1,6 +1,6 @@
 # T2Speech
 
-![Development Status](https://img.shields.io/badge/status-active%20development-6b7280)
+![Release](https://img.shields.io/badge/release-v0.1.0%20preview-6b7280)
 ![Python](https://img.shields.io/badge/Python-3.13-6b7280)
 ![License](https://img.shields.io/badge/license-MIT-6b7280)
 
@@ -10,7 +10,51 @@ T2Speech is a free flashcard application designed for creating, organizing, and 
 
 Built with Python, FastAPI, and SQLite, it focuses on a straightforward learning experience, local data storage, and data portability without requiring an external account or cloud service.
 
-> **Development status:** T2Speech is under active development. The application has been tested locally on Windows. Linux compatibility has not yet been verified. Standalone desktop packages and Docker-based self-hosting are planned.
+T2Speech is under active development. **v0.1.0** is a Windows portable preview release; Linux desktop packaging and Docker-based self-hosting are not available yet.
+
+<details>
+<summary><strong>Development Journey</strong> — milestones and technical evolution</summary>
+
+### From prototype to the first portable preview
+
+T2Speech began as a local-first flashcard application built with Python, FastAPI, Jinja2, and SQLite. Its initial milestone was deck and card management, followed by study sessions, keyboard controls, speech playback, and CSV/XLSX data portability.
+
+The Windows desktop preview packages the application as a portable ZIP. The backend and local storage remain part of the architecture; the desktop experience uses a WebView2-based window rather than requiring users to start the development server manually.
+
+### Milestones
+
+| Milestone | Status |
+|---|---|
+| Deck and card management | Completed |
+| Study sessions and progress tracking | Completed |
+| Text-to-speech and audio-assisted study | Completed |
+| CSV/XLSX import and export | Completed |
+| Windows portable preview (`v0.1.0`) | Released — pre-release |
+| Independent Windows machine validation | Pending |
+| Docker self-hosting | Planned |
+| Linux compatibility verification | Planned |
+
+This is a development history, not a promise of release dates. Further technical details are available in the developer sections below.
+
+</details>
+
+## Download & Installation
+
+**Windows portable preview — v0.1.0 (pre-release)**
+
+**[Download T2Speech for Windows (Portable ZIP)](https://github.com/atakankeskin99/T2Speech/releases/download/v0.1.0/T2Speech-Windows-Portable.zip)** · [View release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.1.0)
+
+1. Download `T2Speech-Windows-Portable.zip` from the release link above.
+2. Extract the entire ZIP archive to a folder of your choice.
+3. Launch `T2Speech.exe` from the extracted folder.
+
+**Requirement:** Microsoft Edge WebView2 Runtime must be installed on Windows. You do not need Python, Git, or a development environment for the portable release.
+
+**Local data:** Database files and logs are stored at `%LOCALAPPDATA%\T2Speech\data`. They are not stored inside the extracted ZIP folder.
+
+**Preview status:** The package was launched and tested on the development PC. Testing on an independent Windows computer remains pending. The release passed 43 automated tests and basic packaged-app smoke checks.
+
+For contributors or users who want to run from source, see [Development Setup](#development-setup) below.
 
 ## Features
 
@@ -52,11 +96,27 @@ T2Speech uses the Web Speech API and locally available system voices. Speech ava
 
 Database imports use SQLite transactions to protect against partially committed operations.
 
-## Getting Started
+## Basic Usage
 
-T2Speech currently runs as a local web application using FastAPI and Uvicorn.
+1. **Create a deck.** Open the Library, enter a name, and configure its languages.
+2. **Add cards.** Create flashcards manually or import CSV/XLSX files.
+3. **Start a session.** Choose shuffle or reverse settings and begin studying.
+4. **Review cards.** Reveal answers, use Again/Good, and enable speech playback when local voices are available.
+5. **Export content.** Download decks in CSV or XLSX format.
 
-### Prerequisites
+### Data Import Limitations
+
+CSV and XLSX import currently supports text-based Front and Back fields, subject to file-size and row-count limits.
+
+Exported spreadsheets contain card content, not full application backups or study session history.
+
+Native Anki `.apkg` import is not currently supported.
+
+## Development Setup
+
+These instructions are for development or running the local web version from source. **For regular Windows use, download the portable release above instead.**
+
+### Development prerequisites
 
 - Python 3.13 (current development target)
 - Git
@@ -135,22 +195,6 @@ The application initializes its SQLite database at `data/decks.db`.
 
 The `--reload` flag is intended for development rather than production deployment.
 
-## Basic Usage
-
-1. **Create a deck.** Open the Library, enter a name, and configure its languages.
-2. **Add cards.** Create flashcards manually or import CSV/XLSX files.
-3. **Start a session.** Choose shuffle or reverse settings and begin studying.
-4. **Review cards.** Reveal answers, use Again/Good, and enable speech playback when local voices are available.
-5. **Export content.** Download decks in CSV or XLSX format.
-
-### Data Import Limitations
-
-CSV and XLSX import currently supports text-based Front and Back fields, subject to file-size and row-count limits.
-
-Exported spreadsheets contain card content, not full application backups or study session history.
-
-Native Anki `.apkg` import is not currently supported.
-
 ## Technology Stack
 
 | Component | Technology |
@@ -194,7 +238,7 @@ T2Speech/
 └── README.md
 ```
 
-The local `data/` directory contains the SQLite database and is excluded from version control.
+When running from source, the local `data/` directory contains the SQLite database and is excluded from version control. The Windows portable build stores database files and logs under `%LOCALAPPDATA%\T2Speech\data`.
 
 ## Testing
 
@@ -223,7 +267,8 @@ The project also undergoes manual testing of application workflows. Broader inte
 |---|---|
 | Windows — Local Web Application | Tested during development |
 | Linux — Local Web Application | Not yet tested |
-| Windows Desktop Package | Planned |
+| Windows Portable ZIP (`v0.1.0`) | Available — pre-release |
+| Windows installer | Not available |
 | Linux Desktop Package | Planned |
 | Docker Deployment | Planned |
 
@@ -237,7 +282,7 @@ It is intended for development only and does not provide a standalone desktop la
 
 Optional desktop dependencies are listed in `requirements-desktop.txt`.
 
-Desktop integration and packaging are not yet supported release features.
+A Windows portable preview is now available. `desktop_smoke.py` remains a development-only test; it is not the packaged application itself.
 
 ## Roadmap
 
@@ -247,16 +292,17 @@ Desktop integration and packaging are not yet supported release features.
 | Study Mode & Session Management | Completed |
 | Text-to-Speech & Audio-Assisted Study | Completed |
 | CSV/XLSX Import & Export | Completed |
-| Desktop Packaging — Windows/Linux | Planned |
+| Windows Portable ZIP (`v0.1.0`) | Released — pre-release |
+| Windows installer / Linux packaging | Planned |
 | Docker & Self-Hosting | Planned |
 | Cross-Platform Testing | Planned |
-| Documentation & Release Preparation | In Progress |
+| v0.1.0 release documentation | Completed |
 
 The roadmap reflects current priorities rather than fixed release commitments.
 
 ## Current Limitations
 
-- No standalone desktop installer or packaged release is available.
+- A Windows portable ZIP is available, but no installer is provided. Testing on a separate Windows PC remains pending.
 - Linux compatibility has not yet been verified.
 - Docker deployment is not yet implemented.
 - Text-to-speech depends on locally available system voices.
