@@ -681,4 +681,112 @@ def update_study_session_settings(
         raise
 
     finally:
-        connection.close()        
+        connection.close()
+
+def import_cards_transaction(
+    cards: tuple[tuple[str, str], ...],
+    *,
+    deck_id: int | None = None,
+    new_deck_name: str | None = None,
+    description: str = "",
+    front_language: str = "und",
+    back_language: str = "und",
+) -> tuple[int, int]:
+    creating_deck = deck_id is None
+
+    if creating_deck == (new_deck_name is None):
+        raise ValueError(
+            "Provide either an existing deck_id or a new_deck_name."
+        )
+
+    normalized_cards = [
+        (front.strip(), back.strip())
+        for front, back in cards
+        if front.strip() and back.strip()
+    ]
+
+    if not normalized_cards:
+        raise ValueError("There are no valid cards to import.")
+
+    if creating_deck and not new_deck_name.strip():
+        raise ValueError("The new deck name cannot be empty.")
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+
+        if creating_deck:
+            cursor.execute(
+                """
+                INSERT INTO decks (
+                    name,
+                    description,
+                    front_language,
+                    back_language
+                )
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    new_deck_name.strip(),
+                    description,
+                    front_language,
+                    back_language,
+                ),
+            )
+            destination_deck_id = cursor.lastrowid
+        else:
+            deck_exists = cursor.execute(
+                "SELECT 1 FROM decks WHERE id = ?",
+                (deck_id,),
+            ).fetchone()
+
+            if deck_exists is None:
+                raise ValueError("Destination deck not found.")
+
+            destination_deck_id = deck_id
+
+        existing_pairs = {
+            (front.strip(), back.strip())
+            for front, back in cursor.execute(
+                """
+                SELECT front, back
+                FROM cards
+                WHERE deck_id = ?
+                """,
+                (destination_deck_id,),
+            ).fetchall()
+        }
+
+        inserted_pairs = set()
+        imported_count = 0
+
+        for front, back in normalized_cards:
+            pair = (front, back)
+
+            if pair in existing_pairs or pair in inserted_pairs:
+                continue
+
+            cursor.execute(
+                """
+                INSERT INTO cards (deck_id, front, back)
+                VALUES (?, ?, ?)
+                """,
+                (destination_deck_id, front, back),
+            )
+            inserted_pairs.add(pair)
+            imported_count += 1
+
+        if creating_deck and imported_count == 0:
+            raise ValueError("No new cards were available to import.")
+
+        connection.commit()
+        return destination_deck_id, imported_count
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()

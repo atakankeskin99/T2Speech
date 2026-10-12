@@ -23,9 +23,19 @@
     <div class="deck-heading-row">
         <h1>{{ deck[1] }}</h1>
         <a
-            class="button-deck-edit"
+            class="button-deck-action"
             href="/decks/{{ deck[0] }}/edit"
         >Edit deck</a>
+         <a
+            class="button-deck-action"
+            href="/decks/{{ deck[0] }}/export.csv"
+        >Export as CSV</a>
+
+         <a
+            class="button-deck-action"
+            href="/decks/{{ deck[0] }}/export.xlsx"
+       >Export as XLSX</a>
+
     </div>
 
     <p class="deck-description">{{ deck[2] }}</p>

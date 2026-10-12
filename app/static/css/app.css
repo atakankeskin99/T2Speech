@@ -522,7 +522,7 @@ button:focus-visible{
     overflow-wrap: anywhere;
 }
 
-.button-deck-edit {
+.button-deck-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -538,14 +538,14 @@ button:focus-visible{
     white-space: nowrap;
 }
 
-.button-deck-edit:hover {
+.button-deck-action:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
     background-color: var(--color-accent-subtle);
     text-decoration: none;
 }
 
-.button-deck-edit:focus-visible {
+.button-deck-action:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }
@@ -580,4 +580,37 @@ button:focus-visible{
 .study-progress::-moz-progress-bar {
     background-color: #3b82f6;
     border-radius: 999px;
+}
+
+.import-preview-columns,
+.import-preview-sides {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6);
+}
+
+.import-preview-columns {
+    padding: 0 0 var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.import-preview-list .import-preview-item {
+    display: block;
+    padding: var(--space-4) 0;
+}
+
+.import-preview-status,
+.import-preview-reason {
+    margin: 0 0 var(--space-2);
+    color: var(--color-text-secondary);
+}
+
+.import-preview-sides {
+    min-width: 0;
+}
+
+.import-preview-reason {
+    margin-top: var(--space-2);
 }

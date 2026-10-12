@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import complete - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Import complete</h1>
+                <p>{{ filename }} · {{ deck_name }}</p>
+            </header>
+
+            <section class="card-create-section">
+                <h2>{{ imported_count }} cards imported</h2>
+
+                <ul>
+                    <li>Total rows: {{ analysis.total_rows }}</li>
+                    <li>Already in deck: {{ analysis.already_in_deck }}</li>
+                    <li>Duplicates within file: {{ analysis.duplicates_in_file }}</li>
+                    <li>Invalid rows: {{ analysis.invalid_rows }}</li>
+                    <li>Empty rows skipped: {{ analysis.empty_rows }}</li>
+                    <li>New duplicates skipped during confirmation: {{ skipped_at_commit }}</li>
+                </ul>
+
+                <a class="button-primary" href="/decks/{{ deck_id }}">
+                    Open deck
+                </a>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

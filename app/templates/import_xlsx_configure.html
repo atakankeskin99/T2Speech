@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure XLSC import - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/imports/csv">← Choose another file</a>
+
+            <header class="page-header">
+                <h1>Configure import</h1>
+                <p>{{ filename }} · {{ data_row_count }} data rows</p>
+            </header>
+
+            <section class="card-create-section">
+                <form class="card-form" action="/imports/xlsx/preview" method="post">
+                    <input type="hidden" name="sheet_name" value="{{ sheet_name }}">
+                    <input type="hidden" name="token" value="{{ token }}">
+
+                    <div class="form-field">
+    <label for="has-header">
+        <input
+            id="has-header"
+            type="checkbox"
+            name="has_header"
+            value="true"
+            checked
+        >
+        First row contains column names
+    </label>
+</div>
+                    <div class="form-field">
+                        <label for="front-index">Front column</label>
+                        <select id="front-index" name="front_index" required>
+                            {% for header in headers %}
+                            <option
+                                value="{{ loop.index0 }}"
+                                {% if loop.index0 == default_front_index %}selected{% endif %}
+                            >
+                                {{ header if header else "Column " ~ loop.index }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="back-index">Back column</label>
+                        <select id="back-index" name="back_index" required>
+                            <option
+                                value=""
+                                disabled
+                                {% if default_back_index is none %}selected{% endif %}
+                            >Choose a column</option>
+
+                            {% for header in headers %}
+                            <option
+                                value="{{ loop.index0 }}"
+                                {% if loop.index0 == default_back_index %}selected{% endif %}
+                            >
+                                {{ header if header else "Column " ~ loop.index }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <h2>Destination</h2>
+
+<div class="form-field">
+    <label>
+        <input type="radio" name="destination" value="new" checked>
+        Create a new deck
+    </label>
+</div>
+
+<div class="form-field">
+    <label for="new-deck-name">New deck name</label>
+    <input id="new-deck-name" name="new_deck_name" type="text">
+</div>
+
+<div class="form-field">
+    <label for="new-deck-description">Description</label>
+    <textarea id="new-deck-description" name="description"></textarea>
+</div>
+
+<div class="form-field">
+    <label for="front-language">Front language</label>
+    <select id="front-language" name="front_language">
+        <option value="" selected>Choose a language</option>
+        {% for code, label in languages %}
+        <option value="{{ code }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-field">
+    <label for="back-language">Back language</label>
+    <select id="back-language" name="back_language">
+        <option value="" selected>Choose a language</option>
+        {% for code, label in languages %}
+        <option value="{{ code }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-field">
+    <label>
+        <input type="radio" name="destination" value="existing">
+        Add to an existing deck
+    </label>
+</div>
+
+<div class="form-field">
+    <label for="destination-deck">Existing deck</label>
+    <select id="destination-deck" name="deck_id">
+        <option value="" selected>Choose a deck</option>
+        {% for deck in decks %}
+        <option value="{{ deck[0] }}">{{ deck[1] }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+                    <div class="form-actions">
+                        <button class="button-primary" type="submit">
+                            Continue to preview
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

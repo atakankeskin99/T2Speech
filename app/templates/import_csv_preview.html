@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview CSV import - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/imports/csv">← Start over</a>
+
+            <header class="page-header">
+                <h1>Preview import</h1>
+                <p>{{ filename }} · Destination: {{ destination_name }}</p>
+            </header>
+
+            <section>
+                <h2>Import summary</h2>
+                <ul>
+                    <li>Total rows: {{ analysis.total_rows }}</li>
+                    <li>Ready to import: {{ analysis.ready_to_import }}</li>
+                    <li>Already in deck: {{ analysis.already_in_deck }}</li>
+                    <li>Duplicates within file: {{ analysis.duplicates_in_file }}</li>
+                    <li>Invalid rows: {{ analysis.invalid_rows }}</li>
+                    <li>Empty rows skipped: {{ analysis.empty_rows }}</li>
+                </ul>
+            </section>
+
+            <section class="import-preview-section">
+    <h2>Rows</h2>
+
+    <div class="import-preview-columns" aria-hidden="true">
+        <span>Front</span>
+        <span>Back</span>
+    </div>
+
+    <ul class="card-list import-preview-list">
+        {% for row in analysis.rows %}
+        <li class="card-list-item import-preview-item">
+            <p class="import-preview-status">
+                Row {{ row.row_number }} · {{ row.status }}
+            </p>
+
+            <div class="import-preview-sides">
+                <p class="card-front">{{ row.front }}</p>
+                <p class="card-back">{{ row.back }}</p>
+            </div>
+
+            {% if row.reason %}
+            <p class="import-preview-reason">{{ row.reason }}</p>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+
+            <form action="/imports/csv/confirm" method="post">
+                <input type="hidden" name="token" value="{{ token }}">
+                <input type="hidden" name="filename" value="{{ filename }}">
+                <input type="hidden" name="destination" value="{{ destination }}">
+                <input type="hidden" name="new_deck_name" value="{{ new_deck_name }}">
+                <input type="hidden" name="description" value="{{ description }}">
+                <input type="hidden" name="front_language" value="{{ front_language }}">
+                <input type="hidden" name="back_language" value="{{ back_language }}">
+                <input type="hidden" name="deck_id" value="{{ deck_id }}">
+                <input type="hidden" name="front_index" value="{{ front_index }}">
+                <input type="hidden" name="back_index" value="{{ back_index }}">
+                <input type="hidden" name="has_header" value="{{ has_header | lower }}">
+
+                {% if analysis.ready_to_import > 0 %}
+                <button class="button-primary" type="submit">
+                    Confirm import
+                </button>
+                {% else %}
+                <p>No cards are ready to import.</p>
+                {% endif %}
+            </form>
+        </main>
+    </div>
+</body>
+</html>

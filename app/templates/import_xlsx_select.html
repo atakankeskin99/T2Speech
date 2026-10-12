@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import XLSX - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/">← Back to Library</a>
+
+            <header class="page-header">
+                {% if error %}
+                <p role="alert">{{ error }}</p>
+                {% endif %}
+                <h1>Import cards</h1>
+                <p>Select an XLSX file to review before importing.</p>
+            </header>
+
+            <section class="card-create-section">
+                <form
+                    class="card-form"
+                    action="/imports/xlsx/configure"
+                    method="post"
+                    enctype="multipart/form-data"
+               >
+                  <div class="form-field">
+                      <label for="xlsx-file">XLSX file</label>
+                      <input
+                         id="xlsx-file"
+                         name="file"
+                         type="file"
+                         accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                         required
+                     >
+                  </div>
+
+                    <p>Maximum file size: 5 MB. Maximum data rows: 10,000.</p>
+
+                    <div class="form-actions">
+                        <button class="button-primary" type="submit">
+                            Continue
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
