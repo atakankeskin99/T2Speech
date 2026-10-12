@@ -40,6 +40,24 @@ class ImportStagingTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             staging.load_staged_csv(token)
 
+    def test_saves_loads_and_deletes_xlsx(self):
+        content = b"sample XLSX bytes"
+
+        token = staging.save_staged_file(content, "xlsx")
+        path = self.staging_directory / f"{token}.xlsx"
+
+        self.assertEqual(
+            staging.load_staged_file(token, "xlsx"),
+            content,
+        )
+        self.assertTrue(path.exists())
+
+        staging.delete_staged_file(token, "xlsx")
+
+        self.assertFalse(path.exists())
+        with self.assertRaises(FileNotFoundError):
+            staging.load_staged_file(token, "xlsx")
+
     def test_rejects_invalid_token(self):
         with self.assertRaises(ValueError):
             staging.load_staged_csv("../not-a-token.csv")

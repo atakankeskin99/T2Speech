@@ -12,13 +12,13 @@ class CsvImportError(ValueError):
 
 
 @dataclass(frozen=True)
-class ParsedCsv:
+class ParsedImportData:
     headers: tuple[str, ...]
     rows: tuple[tuple[str, ...], ...]
-    delimiter: str
+    delimiter: str | None = None
 
 
-def parse_csv(file_bytes: bytes, *, has_header: bool = True) -> ParsedCsv:
+def parse_csv(file_bytes: bytes, *, has_header: bool = True) -> ParsedImportData:
     if not file_bytes:
         raise CsvImportError("The CSV file is empty.")
 
@@ -86,7 +86,7 @@ def parse_csv(file_bytes: bytes, *, has_header: bool = True) -> ParsedCsv:
     if not headers:
         raise CsvImportError("The CSV file has no columns.")
 
-    return ParsedCsv(
+    return ParsedImportData(
         headers=headers,
         rows=tuple(rows),
         delimiter=dialect.delimiter,
@@ -113,7 +113,7 @@ class ImportAnalysis:
     empty_rows: int
 
 def analyze_import(
-    parsed_csv: ParsedCsv,
+    parsed_csv: ParsedImportData,
     front_index: int,
     back_index: int,
     existing_cards: tuple[tuple[str, str], ...] = (),

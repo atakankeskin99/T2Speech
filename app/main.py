@@ -5,15 +5,19 @@ from fastapi.staticfiles import StaticFiles
 from urllib.parse import quote
 from fastapi.responses import Response
 from app.services.csv_export import build_csv_export
+from app.services.xlsx_import import get_xlsx_sheet_names
 from app.services.csv_import import (
     MAX_FILE_SIZE_BYTES,
     analyze_import,
     parse_csv,
 )
+from app.services.xlsx_import import get_xlsx_sheet_names, parse_xlsx
 from app.services.import_staging import (
     delete_staged_csv,
     load_staged_csv,
+    load_staged_file,
     save_staged_csv,
+    save_staged_file,
 
 )
 
@@ -80,6 +84,14 @@ def select_csv_import(request: Request):
         context={},
     )
 
+@app.get("/imports/xlsx", response_class=HTMLResponse)
+def select_xlsx_import(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="import_xlsx_select.html",
+        context={},
+    )
+
 @app.post("/imports/csv/configure", response_class=HTMLResponse)
 async def configure_csv_import(
     request: Request,
@@ -123,6 +135,79 @@ async def configure_csv_import(
             "languages": LANGUAGES,
         },
     )
+
+@app.post("/imports/xlsx/configure", response_class=HTMLResponse)
+async def configure_xlsx_import(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    filename = file.filename or ""
+
+    try:
+        if not filename.lower().endswith(".xlsx"):
+            raise ValueError("Please select an XLSX file.")
+
+        file_bytes = await file.read(MAX_FILE_SIZE_BYTES + 1)
+        sheet_names = get_xlsx_sheet_names(file_bytes)
+        token = save_staged_file(file_bytes, "xlsx")
+
+    except ValueError as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="import_xlsx_select.html",
+            context={"error": str(error)},
+            status_code=400,
+        )
+
+    finally:
+        await file.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="import_xlsx_sheet.html",
+        context={
+            "filename": filename,
+            "token": token,
+            "sheet_names": sheet_names,
+        },
+    )
+@app.post("/imports/xlsx/configure-columns", response_class=HTMLResponse)
+def configure_xlsx_columns(
+    request: Request,
+    token: str = Form(...),
+    filename: str = Form("XLSX file"),
+    sheet_name: str = Form(...),
+):
+    try:
+        file_bytes = load_staged_file(token, "xlsx")
+        parsed_xlsx = parse_xlsx(file_bytes, sheet_name)
+
+    except (FileNotFoundError, ValueError) as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="import_xlsx_select.html",
+            context={"error": str(error)},
+            status_code=400,
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="import_xlsx_configure.html",
+        context={
+            "filename": filename,
+            "token": token,
+            "sheet_name": sheet_name,
+            "headers": parsed_xlsx.headers,
+            "data_row_count": len(parsed_xlsx.rows),
+            "default_front_index": 0,
+            "default_back_index": (
+                1 if len(parsed_xlsx.headers) > 1 else None
+            ),
+            "decks": get_decks(),
+            "languages": LANGUAGES,
+        },
+    )
+
 
 @app.post("/imports/csv/preview", response_class=HTMLResponse)
 def preview_csv_import(

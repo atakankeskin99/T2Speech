@@ -2,13 +2,13 @@ import unittest
 
 from app.services.csv_import import (
     CsvImportError,
-    ParsedCsv,
+    ParsedImportData,
     analyze_import,
 )
 
 
 def make_csv(rows, headers=("Front", "Back")):
-    return ParsedCsv(
+    return ParsedImportData(
         headers=headers,
         rows=tuple(tuple(row) for row in rows),
         delimiter=",",
@@ -150,7 +150,7 @@ class AnalyzeImportTests(unittest.TestCase):
             )
 
     def test_row_number_starts_at_one_without_header(self):
-        parsed = ParsedCsv(
+        parsed = ParsedImportData(
             headers=("Column 1", "Column 2"),
             rows=(("a", "b"),),
             delimiter=",",

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select worksheet - T2Speech</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">T2Speech</a>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-link is-active" href="/">Library</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <a class="back-link" href="/imports/xlsx">← Choose another file</a>
+
+            <header class="page-header">
+                <h1>Select a worksheet</h1>
+                <p>{{ filename }}</p>
+            </header>
+
+            <section class="card-create-section">
+                <form class="card-form" action="/imports/xlsx/configure-columns" method="post">
+                    <input type="hidden" name="token" value="{{ token }}">
+                    <input type="hidden" name="filename" value="{{ filename }}">
+
+                    <div class="form-field">
+                        <label for="sheet-name">Worksheet</label>
+                        <select id="sheet-name" name="sheet_name" required>
+                            {% for sheet_name in sheet_names %}
+                            <option value="{{ sheet_name }}">{{ sheet_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="button-primary" type="submit">Continue</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
