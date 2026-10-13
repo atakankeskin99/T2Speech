@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, HTTPException, File, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from urllib.parse import quote
@@ -712,15 +712,19 @@ def read_deck(request: Request, deck_id: int):
         raise HTTPException(status_code=404, detail="Deck not found")
     cards = get_cards(deck_id)
     active_session = get_active_study_session(deck_id)
+    active_session_state = (
+        get_study_session_state(active_session[0]) if active_session else None
+    )
 
     return templates.TemplateResponse(
         request=request,
         name="deck.html",
         context={
-    "deck": deck,
-    "cards": cards,
-    "active_session": active_session
-}
+            "deck": deck,
+            "cards": cards,
+            "active_session": active_session,
+            "active_session_state": active_session_state,
+        },
     )
 @app.get("/decks/{deck_id}/export.csv")
 def export_deck_csv(deck_id: int):
@@ -920,6 +924,9 @@ def setup_study(
 
     cards = get_cards(deck_id)
     active_session = get_active_study_session(deck_id)
+    active_session_state = (
+        get_study_session_state(active_session[0]) if active_session else None
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -928,6 +935,7 @@ def setup_study(
             "deck": deck,
             "total_cards": len(cards),
             "active_session": active_session,
+            "active_session_state": active_session_state,
             "confirm_replace": False,
             "shuffle": True,
             "reverse": False,
@@ -965,6 +973,9 @@ def start_study(
         )
     except ActiveStudySessionExists:
         active_session = get_active_study_session(deck_id)
+        active_session_state = (
+            get_study_session_state(active_session[0]) if active_session else None
+        )
 
         return templates.TemplateResponse(
             request=request,
@@ -973,6 +984,7 @@ def start_study(
                 "deck": deck,
                 "total_cards": len(cards),
                 "active_session": active_session,
+                "active_session_state": active_session_state,
                 "confirm_replace": True,
                 "shuffle": shuffle,
                 "reverse": reverse,
@@ -1003,16 +1015,23 @@ def study_session(request: Request, session_id: int):
             detail="Deck not found"
         )
 
-    card = session_state["current_card"]
+    # Only successfully completed sessions may display the completion view.
+    # Replaced (abandoned) sessions have no current_card as well.
+    if session_state["status"] == "abandoned":
+        return RedirectResponse(url=f"/decks/{deck[0]}", status_code=303)
 
-    if card is None:
+    if session_state["status"] == "completed":
         return templates.TemplateResponse(
             request=request,
             name="study_complete.html",
-            context={
-                "deck": deck,
-                "session": session_state
-            }
+            context={"deck": deck, "session": session_state},
+        )
+
+    card = session_state["current_card"]
+    if card is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Active study session has no pending card",
         )
 
     if session_state["reverse"]:
@@ -1039,37 +1058,9 @@ def study_session(request: Request, session_id: int):
         }
     )
 
-    if deck is None:
-        raise HTTPException(status_code=404, detail="Deck not found")
-
-    if session_state["reverse"]:
-        front_text = card[3]
-        back_text = card[2]
-        front_language = card[5]
-        back_language = card[4]
-    else:
-        front_text = card[2]
-        back_text = card[3]
-        front_language = card[4]
-        back_language = card[5]
-
-    return templates.TemplateResponse(
-        request=request,
-        name="study.html",
-        context={
-            "deck": deck,
-            "card": card,
-            "session": session_state,
-            "front_text": front_text,
-            "back_text": back_text,
-            "front_language": front_language,
-            "back_language": back_language,
-
-        }
-    )
-
 @app.post("/study/{session_id}/settings")
 def save_study_session_settings(
+    request: Request,
     session_id: int,
     auto_reveal: bool = Form(False),
     reveal_delay_seconds: int = Form(5),
@@ -1104,6 +1095,18 @@ def save_study_session_settings(
             detail=str(error)
         ) from error
 
+    if "application/json" in request.headers.get("accept", ""):
+        # Respond only after the SQLite transaction has committed.
+        return JSONResponse({
+            "saved": True,
+            "settings": {
+                "auto_reveal": auto_reveal,
+                "reveal_delay_seconds": reveal_delay_seconds,
+                "auto_speak": auto_speak,
+                "speech_rate": speech_rate,
+            },
+        }, headers={"Cache-Control": "no-store"})
+
     return RedirectResponse(
         url=f"/study/{session_id}",
         status_code=303
@@ -1114,7 +1117,8 @@ def save_study_session_settings(
 def rate_study_card(
     session_id: int,
     rating: str = Form(...),
-    revealed: bool = Form(False)
+    revealed: bool = Form(False),
+    study_card_id: int = Form(...)
 ):
     if rating not in {"again", "good"}:
         raise HTTPException(status_code=400, detail="Invalid rating")
@@ -1136,7 +1140,13 @@ def rate_study_card(
             status_code=303
         )
 
-    rate_current_study_card(session_id, rating)
+    try:
+        rate_current_study_card(
+            session_id, rating, expected_card_id=study_card_id
+        )
+    except ValueError as error:
+        # A stale POST must not rate the subsequent card.
+        raise HTTPException(status_code=409, detail=str(error)) from error
 
     return RedirectResponse(
         url=f"/study/{session_id}",

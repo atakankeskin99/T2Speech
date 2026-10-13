@@ -1,3 +1,4 @@
+import math
 import random
 import sqlite3
 from pathlib import Path
@@ -444,7 +445,9 @@ def get_current_study_card(session_id: int):
     finally:
         connection.close()
         
-def rate_current_study_card(session_id: int, rating: str):
+def rate_current_study_card(
+    session_id: int, rating: str, expected_card_id: int
+):
     if rating not in ("again", "good"):
         raise ValueError("Rating must be 'again' or 'good'.")
 
@@ -480,6 +483,12 @@ def rate_current_study_card(session_id: int, rating: str):
             raise RuntimeError("Active session has no pending cards.")
 
         current_card_id = pending_cards[0][0]
+        # Check while holding the write transaction lock: a repeated/stale
+        # request must never evaluate the next card in the queue.
+        if current_card_id != expected_card_id:
+            raise ValueError(
+                "This study card has already changed. Reload the session."
+            )
         remaining_card_ids = [row[0] for row in pending_cards[1:]]
 
         if rating == "good":
@@ -636,8 +645,14 @@ def update_study_session_settings(
             "auto_speak must be 'off', 'front', or 'front_back'."
         )
 
-    if speech_rate <= 0:
-        raise ValueError("speech_rate must be greater than 0.")
+    # Match the Settings UI range, and reject non-finite values before SQLite.
+    if (
+        not isinstance(speech_rate, (int, float))
+        or isinstance(speech_rate, bool)
+        or not math.isfinite(speech_rate)
+        or not 0.1 <= speech_rate <= 10.0
+    ):
+        raise ValueError("speech_rate must be between 0.1 and 10.")
 
     connection = get_connection()
 

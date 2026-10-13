@@ -1,40 +1,63 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study complete - T2Speech</title>
+    <title>Session complete - T2Speech</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("t2speech-theme");
+            document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+        } catch {
+            document.documentElement.dataset.theme = "light";
+        }
+    </script>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body>
+<body class="study-lifecycle-page">
     <div class="app-shell">
         <aside class="sidebar">
             <a class="brand" href="/">T2Speech</a>
             <nav class="sidebar-nav" aria-label="Main navigation">
-                <a class="nav-link" href="/">Library</a>
+                <a class="nav-link is-active" href="/">Library</a>
             </nav>
+            <div class="sidebar-theme">
+                <label class="visually-hidden" for="theme-select">Color theme</label>
+                <select id="theme-select" name="theme" aria-label="Color theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
         </aside>
 
-        <main class="main-content">
-            <a class="back-link" href="/decks/{{ deck[0] }}">Back to deck</a>
-
-            <section class="study-card">
-                <h1>Session complete</h1>
-                <p>{{ deck[1] }} You completed all the cards in your deck.</p>
-                <p>{{ session.good_count }} / {{ session.total_cards }} cards completed</p>
-
-                <a class="button-primary" href="/decks/{{ deck[0] }}">
-                    Return to deck
-                </a>
+        <main class="main-content study-lifecycle-main">
+            <a class="back-link" href="/decks/{{ deck[0] }}">← Back to deck</a>
+            <section class="study-completion" aria-labelledby="completion-heading">
+                <p class="study-lifecycle-eyebrow">STUDY SESSION</p>
+                <h1 id="completion-heading">Session complete</h1>
+                <p class="study-completion-description">You completed every card in <strong>{{ deck[1] }}</strong>.</p>
+                <div class="study-completion-stats">
+                    <div>
+                        <span class="study-completion-count">{{ session.good_count }} <span>of {{ session.total_cards }}</span></span>
+                        <p>Cards completed</p>
+                    </div>
+                    <strong class="study-completion-percentage">100%</strong>
+                </div>
+                <progress class="study-progress study-completion-progress" value="{{ session.good_count }}" max="{{ session.total_cards }}" aria-label="Completed session progress">100%</progress>
+                <div class="study-flow-actions study-completion-actions">
+                    <a class="button-primary" href="/decks/{{ deck[0] }}/study/setup">Study again</a>
+                    <a class="button-secondary" href="/decks/{{ deck[0] }}">Back to deck</a>
+                </div>
             </section>
         </main>
     </div>
     <script>
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape" || event.defaultPrevented) return;
+            if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
             window.location.href = "/decks/{{ deck[0] }}";
-        }
-    });
-</script>
+        });
+    </script>
+    <script src="/static/js/app.js" defer></script>
 </body>
 </html>
