@@ -210,7 +210,7 @@ Bug reports, suggestions, and contributions are welcome through [GitHub Issues](
 
 **Windows — v0.1.0 portable preview**
 
-**[Download T2Speech for Windows (.zip)](https://github.com/atakankeskin99/T2Speech/releases/download/v0.1.0/T2Speech-Windows-Portable.zip)** · [Release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.1.0)
+**[Download T2Speech for Windows (.zip)](https://github.com/user-attachments/files/33364917/T2Speech-v0.2.0-windows-x64.zip)** · [Release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0)
 
 1. Download the ZIP file.
 2. Extract it to a folder of your choice.
