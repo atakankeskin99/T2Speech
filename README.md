@@ -20,6 +20,14 @@ T2Speech is a small, local-first project built around flashcards, text-to-speech
 
 **Current release:** `v0.2.0` is a Windows portable preview. It works on the development computer, but the downloaded package has a known startup issue and has not yet been validated on a separate Windows computer. See [Known Issue](#known-issue--windows-startup).
 
+## Interactive sample demo
+
+A static GitHub Pages demo is implemented in [`demo/`](demo/) with sample decks,
+browser speech, and study sessions saved in the current browser tab. See the
+[demo setup, testing, and limitations](docs/github-pages-demo.md). Publication is
+configured for changes merged into `main`; deployment must succeed before the
+demo is available at `https://atakankeskin99.github.io/T2Speech/`.
+
 ## Screenshots
 
 ### Light Theme

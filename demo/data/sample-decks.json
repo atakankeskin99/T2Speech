@@ -1,0 +1,45 @@
+[
+  {
+    "id": "german-essentials",
+    "name": "German essentials",
+    "description": "Six everyday phrases for your next conversation. German → English.",
+    "front_language": "de-DE",
+    "back_language": "en-GB",
+    "cards": [
+      {"id": "de-hello", "front": "Guten Morgen!", "back": "Good morning!"},
+      {"id": "de-thanks", "front": "Vielen Dank.", "back": "Thank you very much."},
+      {"id": "de-please", "front": "Ein Wasser, bitte.", "back": "A water, please."},
+      {"id": "de-station", "front": "Wo ist der Bahnhof?", "back": "Where is the train station?"},
+      {"id": "de-understand", "front": "Ich verstehe nicht.", "back": "I don't understand."},
+      {"id": "de-later", "front": "Bis später!", "back": "See you later!"}
+    ]
+  },
+  {
+    "id": "turkish-travel",
+    "name": "Turkish for travel",
+    "description": "A quick introduction to useful travel phrases. Turkish → English.",
+    "front_language": "tr-TR",
+    "back_language": "en-GB",
+    "cards": [
+      {"id": "tr-hello", "front": "Merhaba!", "back": "Hello!"},
+      {"id": "tr-thanks", "front": "Teşekkür ederim.", "back": "Thank you."},
+      {"id": "tr-price", "front": "Bu ne kadar?", "back": "How much is this?"},
+      {"id": "tr-coffee", "front": "Bir kahve, lütfen.", "back": "A coffee, please."},
+      {"id": "tr-day", "front": "İyi günler!", "back": "Have a nice day!"}
+    ]
+  },
+  {
+    "id": "science-basics",
+    "name": "Everyday science",
+    "description": "Five short questions about the world around us. English → English.",
+    "front_language": "en-GB",
+    "back_language": "en-GB",
+    "cards": [
+      {"id": "sci-water", "front": "What is the chemical formula for water?", "back": "H₂O: two hydrogen atoms and one oxygen atom."},
+      {"id": "sci-plants", "front": "What process lets plants use sunlight to make food?", "back": "Photosynthesis."},
+      {"id": "sci-gravity", "front": "What force keeps the planets in orbit around the Sun?", "back": "Gravity."},
+      {"id": "sci-heart", "front": "What does the heart pump around the body?", "back": "Blood, carrying oxygen and nutrients."},
+      {"id": "sci-ice", "front": "At what temperature does pure water freeze at standard pressure?", "back": "0 °C (32 °F)."}
+    ]
+  }
+]
