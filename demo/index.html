@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Try T2Speech with read-only sample flashcards. A static interactive demo with browser speech and tab-local sessions.">
+    <title>Library · T2Speech demo</title>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem("t2speech-theme") === "dark" ? "dark" : "light"; } catch {}</script>
+    <link rel="stylesheet" href="assets/app.css">
+    <link rel="stylesheet" href="css/demo.css">
+</head><body data-page="library"><div class="app-shell"><aside class="sidebar">
+    <a class="brand" href="index.html">T2Speech</a>
+    <nav class="sidebar-nav" aria-label="Main navigation"><a class="nav-link is-active" href="index.html">Library</a></nav>
+    <div class="sidebar-theme"><label class="visually-hidden" for="theme-select">Color theme</label>
+    <select id="theme-select" aria-label="Color theme"><option value="light">Light</option><option value="dark">Dark</option></select></div>
+</aside><main class="main-content"><p class="demo-notice">This is an interactive demo using sample data. <a href="https://github.com/atakankeskin99/T2Speech/releases">Download T2Speech for the full application.</a></p><p class="demo-notice">Sessions are saved in sessionStorage for this browser tab/session. This is limited persistence, unlike the desktop app’s SQLite storage. Browser voices vary by browser and operating system.</p><p id="demo-loading" role="status">Loading sample decks…</p><p id="demo-status" class="demo-status" role="status" aria-live="polite"></p><div id="recovery" hidden><a class="button-secondary" href="index.html">Back to Library</a> <button id="reset-demo" type="button">Clear tab demo sessions</button></div><noscript>This interactive demo requires JavaScript.</noscript><div id="page-content" hidden>
+<header class="page-header library-header"><h1>Library</h1></header>
+<section class="deck-list-section" aria-labelledby="deck-list-heading">
+<div class="section-heading"><h2 id="deck-list-heading">Sample decks</h2><span id="deck-count" class="deck-count"></span></div>
+<ul class="deck-list" id="deck-list"></ul></section></div></main></div><script src="assets/app.js" defer></script>
+<script src="js/demo-session.js" defer></script>
+<script src="js/demo-storage.js" defer></script>
+<script src="js/demo-app.js" defer></script></body></html>

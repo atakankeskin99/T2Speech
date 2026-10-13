@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Try T2Speech with read-only sample flashcards. A static interactive demo with browser speech and tab-local sessions.">
+    <title>Study setup · T2Speech demo</title>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem("t2speech-theme") === "dark" ? "dark" : "light"; } catch {}</script>
+    <link rel="stylesheet" href="assets/app.css">
+    <link rel="stylesheet" href="css/demo.css">
+</head><body data-page="setup" class="study-lifecycle-page"><div class="app-shell"><aside class="sidebar">
+    <a class="brand" href="index.html">T2Speech</a>
+    <nav class="sidebar-nav" aria-label="Main navigation"><a class="nav-link is-active" href="index.html">Library</a></nav>
+    <div class="sidebar-theme"><label class="visually-hidden" for="theme-select">Color theme</label>
+    <select id="theme-select" aria-label="Color theme"><option value="light">Light</option><option value="dark">Dark</option></select></div>
+</aside><main class="main-content study-lifecycle-main"><p class="demo-notice">This is an interactive demo using sample data. <a href="https://github.com/atakankeskin99/T2Speech/releases">Download T2Speech for the full application.</a></p><p class="demo-notice">Sessions are saved in sessionStorage for this browser tab/session. This is limited persistence, unlike the desktop app’s SQLite storage. Browser voices vary by browser and operating system.</p><p id="demo-loading" role="status">Loading sample decks…</p><p id="demo-status" class="demo-status" role="status" aria-live="polite"></p><div id="recovery" hidden><a class="button-secondary" href="index.html">Back to Library</a> <button id="reset-demo" type="button">Clear tab demo sessions</button></div><noscript>This interactive demo requires JavaScript.</noscript><div id="page-content" hidden>
+<a class="back-link" data-deck-link href="index.html">← Back to deck</a>
+<header class="page-header study-lifecycle-header"><p class="study-lifecycle-eyebrow">STUDY</p><h1>Study setup</h1>
+<p class="study-lifecycle-subtitle"><span data-deck-name></span> · <span id="card-count"></span> cards</p></header>
+<div id="setup-panels"><div id="resume-container"></div>
+<section class="study-flow-panel study-new-panel" aria-labelledby="new-session-heading"><h2 id="new-session-heading">New session</h2>
+<p class="study-setup-intro">Choose how you would like to study. You can change audio and reveal settings during the session. You will be asked to confirm before an unfinished session is replaced.</p>
+<form class="study-setup-form" id="study-setup-form">
+<label class="study-setup-option"><input id="shuffle" type="checkbox" name="shuffle" checked><span><strong>Shuffle cards</strong><small>Study cards in a random order.</small></span></label>
+<label class="study-setup-option"><input id="reverse" type="checkbox" name="reverse"><span><strong>Reverse cards</strong><small>Practice answers as prompts.</small></span></label>
+<div class="study-flow-actions study-setup-actions"><button class="button-primary" id="start-session" type="submit">Start new session</button></div></form></section></div>
+<section id="replace-panel" class="study-flow-panel study-replace-panel" aria-labelledby="replace-heading" hidden>
+<p class="study-lifecycle-eyebrow">CONFIRM NEW SESSION</p><h2 id="replace-heading">Replace your unfinished session?</h2>
+<p>Starting a new session will discard progress from the current session. The sample deck and its cards will remain available.</p>
+<div class="study-replace-progress"><span>Current progress</span><strong id="replace-progress"></strong></div>
+<div class="study-replace-options"><p class="study-options-label">New session options</p><p id="replace-options"></p></div>
+<div class="study-flow-actions"><button class="button-primary" id="confirm-replace" type="button">Replace session and start new</button>
+<button class="button-secondary" id="cancel-replace" type="button">Cancel</button></div></section></div></main></div><script src="assets/app.js" defer></script>
+<script src="js/demo-session.js" defer></script>
+<script src="js/demo-storage.js" defer></script>
+<script src="js/demo-app.js" defer></script></body></html>

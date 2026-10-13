@@ -1,0 +1,7 @@
+/* Only demo notices and loading/error states; application styling stays shared. */
+.demo-notice { margin: 0 0 var(--space-6); font-size: 0.8125rem; }
+.study-workspace > .demo-notice { margin-bottom: var(--space-4); }
+.demo-status { color: var(--color-text-secondary); }
+.demo-status:empty { display: none; }
+.demo-language { font-size: 0.875rem; }
+[hidden] { display: none !important; }

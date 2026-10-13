@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study · T2Speech demo</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("t2speech-theme");
+            document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+        } catch {
+            document.documentElement.dataset.theme = "light";
+        }
+    </script>
+    <link rel="stylesheet" href="assets/app.css"><link rel="stylesheet" href="css/demo.css">
+</head>
+<body class="study-page" data-page="study">
+    <div class="study-workspace-shell">
+        <nav class="study-topbar" aria-label="Study navigation">
+            <a class="study-back-link" data-deck-link href="index.html">
+                <span aria-hidden="true">←</span> Back to deck
+            </a>
+            <div class="study-topbar-actions">
+                <label class="visually-hidden" for="theme-select">Color theme</label>
+                <select id="theme-select" name="theme" aria-label="Color theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+                <span id="settings-save-status" class="study-save-status" role="status" aria-live="polite" aria-atomic="true"></span>
+                <div class="study-settings-anchor" id="settings-anchor">
+                    <button
+                        class="study-settings-trigger"
+                        id="settings-trigger"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="study-settings"
+                        aria-haspopup="dialog"
+                    >
+                        Settings
+                        <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5v14" />
+                        </svg>
+                    </button>
+                    <section
+                        class="study-settings-popover"
+                        id="study-settings"
+                        role="dialog"
+                        aria-modal="false"
+                        aria-labelledby="study-settings-heading"
+                        hidden
+                    >
+                        <div class="study-settings-heading-row">
+                            <h2 id="study-settings-heading">Session settings</h2>
+                            <button type="button" id="settings-close" class="study-settings-close" aria-label="Close settings">×</button>
+                        </div>
+                        <form
+                            class="study-settings-form"
+                            id="study-settings-form"
+                        >
+                            <fieldset class="study-settings-group">
+                                <legend>Audio</legend>
+                                <div class="form-field">
+                                    <label for="auto-speak">Auto-speak</label>
+                                    <select id="auto-speak" name="auto_speak">
+                                        <option value="off" selected>Off</option>
+                                        <option value="front" selected>Front only</option>
+                                        <option value="front_back" selected>Front + Answer</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="speech-rate">Speech rate</label>
+                                    <input id="speech-rate" type="number" name="speech_rate" min="0.1" max="10" step="0.1" value="1" required>
+                                </div>
+                            </fieldset>
+                            <fieldset class="study-settings-group">
+                                <legend>Study behavior</legend>
+                                <label class="study-checkbox-label" for="auto-reveal">
+                                    <input id="auto-reveal" type="checkbox" name="auto_reveal" value="true" checked>
+                                    Auto-reveal answer
+                                </label>
+                                <div class="form-field study-delay-field" id="reveal-delay-field" hidden>
+                                    <label for="reveal-delay">Reveal delay (seconds)</label>
+                                    <input id="reveal-delay" type="number" name="reveal_delay_seconds" min="1" step="1" value="5" required>
+                                </div>
+                            </fieldset>
+                        </form>
+                        <div class="study-settings-footer">
+                            <p>Changes save automatically in this browser tab.</p>
+                            <span id="settings-save-inline" class="study-settings-inline-status" aria-hidden="true"></span>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </nav>
+
+        <main class="study-workspace">
+<p class="demo-notice">This is an interactive demo using sample data. <a href="https://github.com/atakankeskin99/T2Speech/releases">Download T2Speech for the full application.</a></p><p id="demo-loading" role="status">Loading sample decks…</p><p id="demo-status" class="demo-status" role="status" aria-live="polite"></p><div id="recovery" hidden><a class="button-secondary" href="index.html">Back to Library</a> <button id="reset-demo" type="button">Clear tab demo sessions</button></div><noscript>This interactive demo requires JavaScript.</noscript><div id="page-content" hidden>
+            <header class="study-session-header">
+                <p class="study-eyebrow">STUDY SESSION</p>
+                <h1 data-deck-name></h1>
+                <div class="study-progress-summary">
+                    <span class="study-progress-label">
+                        <strong id="good-count">0</strong> of <span id="total-count">0</span> completed
+                    </span>
+                    <span id="progress-percentage" class="study-progress-percentage">0%</span>
+                </div>
+                <progress
+                    id="study-progress" class="study-progress study-workspace-progress"
+                    value="0"
+                    max="1"
+                    aria-label="Cards completed"
+                >0%</progress>
+                <p id="remaining-count" class="study-remaining"></p>
+            </header>
+
+            <section class="study-focus" aria-label="Current flashcard">
+                <article class="study-card">
+                    <div class="study-card-section study-prompt">
+                        <div class="study-section-heading">
+                            <h2>Prompt</h2>
+                            <button
+                                class="study-audio-button"
+                                id="speak-front"
+                                type="button"
+                                aria-label="Play prompt audio"
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+                                    <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+                                    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+                                    <path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+                                </svg>
+                                <span>Play front</span>
+                            </button>
+                        </div>
+                        <div id="front-text" class="study-card-content" tabindex="-1"></div>
+                    </div>
+
+                    <div class="study-reveal-area">
+                        <button class="button-primary study-reveal-button" id="reveal-button" type="button">
+                            Reveal answer <span class="study-shortcut-hint" aria-hidden="true">Space</span>
+                        </button>
+                    </div>
+
+                    <div id="answer" class="study-card-section study-answer" tabindex="-1" hidden>
+                        <div class="study-section-heading">
+                            <h2>Answer</h2>
+                            <button
+                                class="study-audio-button"
+                                id="speak-back"
+                                type="button"
+                                aria-label="Play answer audio"
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+                                    <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+                                    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+                                    <path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+                                </svg>
+                                <span>Play answer</span>
+                            </button>
+                        </div>
+                        <div id="back-text" class="study-card-content"></div>
+                    </div>
+                </article>
+
+                <p id="audio-status" class="study-audio-status" role="status" aria-live="polite"></p>
+
+                <!-- Ratings intentionally live outside the reading surface. -->
+                <form
+                    id="rating-actions"
+                    class="study-rating-actions"
+                    aria-label="Evaluate the current card"
+                    hidden
+                >
+                    <input id="revealed-input" type="hidden" name="revealed" value="false">
+                    <button class="button-secondary study-rating-button" type="submit" name="rating" value="again">
+                        Again <span class="study-rating-shortcut" aria-hidden="true">1</span>
+                    </button>
+                    <button class="button-primary study-rating-button" type="submit" name="rating" value="good">
+                        Good <span class="study-rating-shortcut" aria-hidden="true">2</span>
+                    </button>
+                </form>
+
+                <p class="study-shortcuts">Space · Reveal &nbsp; 1 · Again &nbsp; 2 · Good &nbsp; R · Repeat audio &nbsp; Esc · Back to deck</p>
+            </section>
+
+<p class="demo-notice">Sessions are saved in sessionStorage for this browser tab/session. This is limited persistence, unlike the desktop app’s SQLite storage. Browser voices vary by browser and operating system.</p></div>
+        </main>
+    </div>
+<script src="assets/app.js" defer></script>
+<script src="js/demo-session.js" defer></script>
+<script src="js/demo-storage.js" defer></script>
+<script src="js/demo-study.js" defer></script>
+<script src="js/demo-app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+name: Deploy interactive demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'demo/**'
+      - 'app/static/css/app.css'
+      - 'app/static/js/app.js'
+      - 'scripts/prepare_demo.py'
+      - 'tests/demo/**'
+      - '.github/workflows/demo-pages.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  package:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Test the browser session engine
+        run: node --test tests/demo/session.test.cjs
+      - name: Prepare static files and shared assets
+        run: python scripts/prepare_demo.py --output build/demo
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: false
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/demo
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the merged demo
+        id: deployment
+        uses: actions/deploy-pages@v4
