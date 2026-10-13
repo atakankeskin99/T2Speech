@@ -135,6 +135,8 @@ def run_desktop() -> None:
         wait_for_api_server(server, thread)
         logger.info("Local API ready at http://127.0.0.1:%s", port)
 
+        webview.settings["ALLOW_DOWNLOADS"] = True
+
         webview.create_window(
             "T2Speech",
             f"http://127.0.0.1:{port}",
