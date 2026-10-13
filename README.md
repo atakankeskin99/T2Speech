@@ -10,7 +10,7 @@
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
 [![License](https://img.shields.io/badge/License-MIT-a78bfa?style=for-the-badge)](LICENSE)
 
-**[Screenshots](#screenshots) · [Features](#features) · [Download](#download--installation) · [Development](#development) · [License](#license)**
+**[Live Demo](https://atakankeskin99.github.io/T2Speech/) · [Screenshots](#screenshots) · [Features](#features) · [Download](#download--installation) · [Development](#development) · [License](#license)**
 
 </div>
 
@@ -20,13 +20,17 @@ T2Speech is a small, local-first project built around flashcards, text-to-speech
 
 **Current release:** `v0.2.0` is a Windows portable preview. It works on the development computer, but the downloaded package has a known startup issue and has not yet been validated on a separate Windows computer. See [Known Issue](#known-issue--windows-startup).
 
-## Interactive sample demo
+## Interactive Demo
 
-A static GitHub Pages demo is implemented in [`demo/`](demo/) with sample decks,
-browser speech, and study sessions saved in the current browser tab. See the
-[demo setup, testing, and limitations](docs/github-pages-demo.md). Publication is
-configured for changes merged into `main`; deployment must succeed before the
-demo is available at `https://atakankeskin99.github.io/T2Speech/`.
+**[Try T2Speech in your browser](https://atakankeskin99.github.io/T2Speech/)** — No installation or account required.
+
+Explore the Library, browse sample decks, and experience the complete Study Mode workflow, including Shuffle, Reverse, Again/Good ratings, session progress, keyboard shortcuts, and text-to-speech using available browser voices.
+
+The demo runs entirely in your browser using read-only sample data. Study sessions are temporarily stored in browser `sessionStorage`, rather than the desktop application's persistent SQLite database.
+
+The interactive demo is deployed through GitHub Pages using GitHub Actions. Deployment and manual functional testing have been completed successfully.
+
+For implementation details, testing, and limitations, see the [GitHub Pages demo documentation](docs/github-pages-demo.md).
 
 ## Screenshots
 
@@ -130,6 +134,7 @@ These changes are described in the [v0.2.0 release notes](https://github.com/ata
 | Text-to-speech and audio-assisted study | Completed |
 | CSV/XLSX import and export | Completed |
 | Study Mode regression suite (pytest + Chromium) | Completed — 48 tests passed on Windows |
+| Interactive GitHub Pages demo | Completed — live and manually verified |
 | Windows portable ZIP (`v0.2.0`) | Released — preview; startup issue pending |
 | Reliable startup and validation on another Windows computer | Pending |
 | Docker self-hosting | Planned |
