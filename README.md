@@ -1,24 +1,107 @@
-# T2Speech
+<div align="center">
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-374151?style=flat-square)](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.1.0)
-![Windows Portable](https://img.shields.io/badge/Windows-portable-6b7280?style=flat-square)
-![Preview](https://img.shields.io/badge/status-preview-9a6700?style=flat-square)
-[![MIT License](https://img.shields.io/badge/license-MIT-6b7280?style=flat-square)](LICENSE)
+# T2Speech
 
 **A local-first, open-source flashcard app with text-to-speech and audio-assisted study.**
 
+[![Release](https://img.shields.io/badge/Release-v0.2.0-3b82f6?style=for-the-badge)](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0)
+[![Windows Portable](https://img.shields.io/badge/Windows-Portable-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0)
+![Preview](https://img.shields.io/badge/Status-Preview-f59e0b?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
+[![License](https://img.shields.io/badge/License-MIT-a78bfa?style=for-the-badge)](LICENSE)
+
+**[Screenshots](#screenshots) · [Features](#features) · [Download](#download--installation) · [Development](#development) · [License](#license)**
+
+</div>
+
+---
+
 T2Speech is a small, local-first project built around flashcards, text-to-speech, and a straightforward study workflow. It keeps data on the user's machine and avoids unnecessary external services.
 
+**Current release:** `v0.2.0` is a Windows portable preview. It works on the development computer, but the downloaded package has a known startup issue and has not yet been validated on a separate Windows computer. See [Known Issue](#known-issue--windows-startup).
+
+## Screenshots
+
+### Light Theme
+
+**Library**
+
+![T2Speech Library — Light Theme](docs/screenshots/v0.2.0/light-library.png)
+
+**Deck View**
+
+![T2Speech Deck View — Light Theme](docs/screenshots/v0.2.0/light-deck.png)
+
+**Study Mode**
+
+![T2Speech Study Mode — Light Theme](docs/screenshots/v0.2.0/light-study-mode.png)
+
 <details>
-<summary><strong>Development</strong> — history, roadmap, architecture, and contributor information</summary>
+<summary><strong>Dark Theme</strong> — Library and Study Mode screenshots</summary>
+
+**Library**
+
+![T2Speech Library — Dark Theme](docs/screenshots/v0.2.0/dark-library.png)
+
+**Study Mode**
+
+![T2Speech Study Mode — Dark Theme](docs/screenshots/v0.2.0/dark-study-mode.png)
+
+</details>
+
+## Features
+
+- **Deck and card management:** Create, edit, and organize decks and cards.
+- **Study Mode:** Reveal answers, evaluate cards with **Again** or **Good**, track progress, and resume unfinished sessions.
+- **Session controls:** Shuffle cards, study them in reverse, and use keyboard shortcuts.
+- **Text-to-speech:** Listen to cards using voices available on your system, with playback and automatic speech options.
+- **CSV and XLSX:** Import cards from spreadsheets with a preview step, and export deck content.
+- **Local storage:** Decks, cards, and study sessions are stored in SQLite on your computer.
+- **Themes:** Light and dark appearances.
+
+## Download & Installation
+
+### Windows — v0.2.0 Portable Preview
+
+**[Download v0.2.0 for Windows](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0)** · [Release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0)
+
+1. Download `T2Speech-v0.2.0-windows-x64.zip` from the release page.
+2. Extract the entire ZIP file.
+3. Open the extracted `T2Speech` folder.
+4. Run `T2Speech.exe`.
+
+Keep `T2Speech.exe` and its `_internal` folder together. The portable application does **not** require Python or Git.
+
+**Requirement:** Microsoft Edge WebView2 Runtime.
+
+### Known Issue — Windows Startup
+
+Some extracted v0.2.0 downloads may fail to start with a `Python.Runtime.Loader.Initialize` error. In local testing, Windows' downloaded-file security marking affected a bundled runtime DLL. The permanent fix is still pending.
+
+**Possible workaround:** Right-click the **downloaded ZIP file** (not the extracted folder), select **Properties**, and use **Unblock** on the **General** tab if available. Apply the change, extract the ZIP again, and retry. This ZIP-level method has not been independently validated across Windows systems.
+
+Recursively unblocking files in the extracted folder resolved the problem during local testing. The [v0.2.0 release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0) document the PowerShell workaround. Only unblock files from sources you trust.
+
+**Status:** Preview; reliable startup on other Windows systems is not yet confirmed.
+
+## How to Use
+
+1. Create a deck in the Library.
+2. Add cards manually or import them from CSV/XLSX.
+3. Start a study session, reveal each answer, and choose **Again** or **Good**.
+4. Resume an unfinished session when you return.
+
+<a id="development"></a>
+<details>
+<summary><strong>Development</strong> — history, roadmap, architecture, setup, and testing</summary>
 
 ### Development Journey
 
 I was looking for a flashcard app that suited the way I wanted to study. I tried a few, but none felt quite right, so I decided to build my own. T2Speech started as a personal project, and I eventually made it open-source for anyone who might find it useful.
 
-**v0.1.0** is the first Windows portable preview, providing a desktop window without requiring users to start the development server manually.
+**v0.1.0** was the first Windows portable preview, providing a desktop window without requiring users to start the development server manually.
 
-**Post-v0.1.0 source development** has focused on refining the study experience and making its behavior more reliable:
+**Development after v0.1.0** focused on refining the study experience and making its behavior more reliable:
 
 - **Study workspace:** A distraction-free layout with a centered flashcard, inline Prompt/Answer reveal, separate Again/Good actions, a compact progress indicator, and keyboard shortcuts.
 - **Session lifecycle:** Persistent sessions with card snapshots, Resume, Shuffle, Reverse Cards, explicit confirmation before replacing an active session, and a dedicated completion screen with Study Again.
@@ -27,20 +110,20 @@ I was looking for a flashcard app that suited the way I wanted to study. I tried
 - **Deck navigation:** A single Export dropdown for CSV and XLSX instead of separate export buttons. Library-level importing remains available through its existing Import dropdown.
 - **Regression coverage:** A reusable pytest/Playwright Study Mode suite in addition to the original unittest-based tests.
 
-These improvements describe the current development source; the existing **v0.1.0 portable download** should not be assumed to include changes made after that release.
+These changes are described in the [v0.2.0 release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0). The portable build's launch issue remains unresolved.
 
 ### Roadmap
 
 | Milestone | Status |
-|---|---|
+| --- | --- |
 | Deck and card management | Completed |
 | Study Mode, persistent sessions, and session lifecycle | Completed |
-| Study workspace refinement and automatic session-settings persistence | Completed — development source |
+| Study workspace refinement and automatic session-settings persistence | Completed |
 | Text-to-speech and audio-assisted study | Completed |
 | CSV/XLSX import and export | Completed |
 | Study Mode regression suite (pytest + Chromium) | Completed — 48 tests passed on Windows |
-| Windows portable ZIP (`v0.1.0`) | Released — preview |
-| Validation of the portable build on another Windows computer | Pending |
+| Windows portable ZIP (`v0.2.0`) | Released — preview; startup issue pending |
+| Reliable startup and validation on another Windows computer | Pending |
 | Docker self-hosting | Planned |
 | Linux compatibility testing | Planned |
 | Additional desktop packaging | Planned |
@@ -50,7 +133,7 @@ The roadmap describes current priorities, not fixed delivery dates.
 ### Technology Stack
 
 | Component | Technology |
-|---|---|
+| --- | --- |
 | Backend | Python 3.13, FastAPI |
 | ASGI server | Uvicorn |
 | Database and session persistence | SQLite |
@@ -72,6 +155,7 @@ Selected files and directories relevant to development (other templates and test
 T2Speech/
 ├── app/
 │   ├── main.py
+│   ├── desktop.py
 │   ├── database.py
 │   ├── models.py
 │   ├── services/
@@ -91,6 +175,9 @@ T2Speech/
 │       ├── study.html
 │       ├── study_setup.html
 │       └── study_complete.html
+├── docs/
+│   └── screenshots/
+│       └── v0.2.0/
 ├── tests/
 │   ├── baseline_theme_tokens.json
 │   └── study_mode/
@@ -110,7 +197,7 @@ For source-based development, `data/decks.db` contains the local SQLite database
 
 ### Development Setup
 
-These instructions are for contributors and anyone who wants to run the local web version from source. The Windows portable release below does **not** require Python or Git.
+These instructions are for contributors and anyone who wants to run the local web version from source. The Windows portable release does **not** require Python or Git.
 
 **Prerequisites:** Python 3.13 (current development target), Git, pip, virtual environment support, and a modern web browser.
 
@@ -183,8 +270,8 @@ The Study Mode suite covers session creation, resumption and replacement; Again/
 ### Platform Compatibility
 
 | Platform | Status |
-|---|---|
-| Windows portable ZIP | Available — preview (`v0.1.0`) |
+| --- | --- |
+| Windows portable ZIP | Available — preview (`v0.2.0`), known startup issue |
 | Windows local web application | Tested during development |
 | Linux local web application | Not yet validated |
 | Windows installer | Not available |
@@ -193,7 +280,7 @@ The Study Mode suite covers session creation, resumption and replacement; Again/
 
 ### Technical Limitations
 
-- The Windows portable release has not yet been validated on a separate Windows computer; post-release source improvements are not yet part of a new published portable build.
+- The Windows portable distribution has a known startup issue and has not yet been validated on a separate Windows computer.
 - Linux compatibility and Docker-based deployment have not yet been verified or released.
 - Speech playback depends on the voices available on the user's system.
 - CSV/XLSX exports contain card content, not full application backups or study-session history.
@@ -205,33 +292,6 @@ The Study Mode suite covers session creation, resumption and replacement; Again/
 Bug reports, suggestions, and contributions are welcome through [GitHub Issues](https://github.com/atakankeskin99/T2Speech/issues) and Pull Requests. Keep changes focused, describe their purpose, and run both the existing unittest suite and the relevant pytest tests before submitting a PR.
 
 </details>
-
-## Download & Installation
-
-**Windows — v0.1.0 portable preview**
-
-**[Download T2Speech for Windows (.zip)](https://github.com/user-attachments/files/33364917/T2Speech-v0.2.0-windows-x64.zip)** · [Release notes](https://github.com/atakankeskin99/T2Speech/releases/tag/v0.2.0)
-
-1. Download the ZIP file.
-2. Extract it to a folder of your choice.
-3. Open the extracted folder and run `T2Speech.exe`.
-
-**Requirement:** Microsoft Edge WebView2 Runtime must be installed. No Python or Git installation is needed.
-
-> **Preview release:** T2Speech has been tested on its development PC, but not yet on a separate Windows computer.
-
-## Features
-
-- **Flashcard management:** Create, edit, and organize decks and cards.
-- **Study Mode:** Flip cards, shuffle or reverse them, track progress, and resume unfinished sessions.
-- **Text-to-speech:** Listen to your cards, adjust playback speed, and use automatic speech playback with available system voices.
-- **CSV & XLSX:** Import cards from spreadsheets, preview them before importing, and export your decks.
-
-## How to Use
-
-1. **Create a deck** in your Library.
-2. **Add cards** manually or import them from CSV/XLSX.
-3. **Start studying:** reveal answers, choose **Again** or **Good**, and use speech playback when available.
 
 ## License
 
