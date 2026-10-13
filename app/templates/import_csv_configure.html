@@ -1,9 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configure CSV import - T2Speech</title>
+        <script>
+            try {
+                const savedTheme = localStorage.getItem("t2speech-theme");
+                document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+            } catch {
+                document.documentElement.dataset.theme = "light";
+            }
+        </script>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
@@ -13,6 +21,14 @@
             <nav class="sidebar-nav" aria-label="Main navigation">
                 <a class="nav-link is-active" href="/">Library</a>
             </nav>
+
+            <div class="sidebar-theme">
+                <label class="visually-hidden" for="theme-select">Color theme</label>
+                <select id="theme-select" name="theme" aria-label="Color theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
         </aside>
 
         <main class="main-content">
@@ -138,5 +154,6 @@
             </section>
         </main>
     </div>
+    <script src="/static/js/app.js" defer></script>
 </body>
 </html>

@@ -1,166 +1,199 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study - T2Speech</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("t2speech-theme");
+            document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+        } catch {
+            document.documentElement.dataset.theme = "light";
+        }
+    </script>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body data-deck-url="/decks/{{ deck[0] }}">
-    <div class="app-shell">
-        <aside class="sidebar">
-            <a class="brand" href="/">T2Speech</a>
-            <nav class="sidebar-nav" aria-label="Main navigation">
-                <a class="nav-link" href="/">Library</a>
-            </nav>
-        </aside>
+<body class="study-page" data-deck-url="/decks/{{ deck[0] }}">
+    <div class="study-workspace-shell">
+        <nav class="study-topbar" aria-label="Study navigation">
+            <a class="study-back-link" href="/decks/{{ deck[0] }}">
+                <span aria-hidden="true">←</span> Back to deck
+            </a>
+            <div class="study-topbar-actions">
+                <label class="visually-hidden" for="theme-select">Color theme</label>
+                <select id="theme-select" name="theme" aria-label="Color theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+                <span id="settings-save-status" class="study-save-status" role="status" aria-live="polite" aria-atomic="true"></span>
+                <div class="study-settings-anchor" id="settings-anchor">
+                    <button
+                        class="study-settings-trigger"
+                        id="settings-trigger"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="study-settings"
+                        aria-haspopup="dialog"
+                    >
+                        Settings
+                        <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5v14" />
+                        </svg>
+                    </button>
+                    <section
+                        class="study-settings-popover"
+                        id="study-settings"
+                        role="dialog"
+                        aria-modal="false"
+                        aria-labelledby="study-settings-heading"
+                        hidden
+                    >
+                        <div class="study-settings-heading-row">
+                            <h2 id="study-settings-heading">Session settings</h2>
+                            <button type="button" id="settings-close" class="study-settings-close" aria-label="Close settings">×</button>
+                        </div>
+                        <form
+                            class="study-settings-form"
+                            id="study-settings-form"
+                            action="/study/{{ session.id }}/settings"
+                            method="post"
+                        >
+                            <fieldset class="study-settings-group">
+                                <legend>Audio</legend>
+                                <div class="form-field">
+                                    <label for="auto-speak">Auto-speak</label>
+                                    <select id="auto-speak" name="auto_speak">
+                                        <option value="off" {% if session.auto_speak == "off" %}selected{% endif %}>Off</option>
+                                        <option value="front" {% if session.auto_speak == "front" %}selected{% endif %}>Front only</option>
+                                        <option value="front_back" {% if session.auto_speak == "front_back" %}selected{% endif %}>Front + Answer</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="speech-rate">Speech rate</label>
+                                    <input id="speech-rate" type="number" name="speech_rate" min="0.1" max="10" step="0.1" value="{{ session.speech_rate }}" required>
+                                </div>
+                            </fieldset>
+                            <fieldset class="study-settings-group">
+                                <legend>Study behavior</legend>
+                                <label class="study-checkbox-label" for="auto-reveal">
+                                    <input id="auto-reveal" type="checkbox" name="auto_reveal" value="true" {% if session.auto_reveal %}checked{% endif %}>
+                                    Auto-reveal answer
+                                </label>
+                                <div class="form-field study-delay-field" id="reveal-delay-field" {% if not session.auto_reveal %}hidden{% endif %}>
+                                    <label for="reveal-delay">Reveal delay (seconds)</label>
+                                    <input id="reveal-delay" type="number" name="reveal_delay_seconds" min="1" step="1" value="{{ session.reveal_delay_seconds }}" required>
+                                </div>
+                            </fieldset>
+                        </form>
+                        <div class="study-settings-footer">
+                            <p>Changes save automatically.</p>
+                            <span id="settings-save-inline" class="study-settings-inline-status" aria-hidden="true"></span>
+                            <button type="button" id="settings-retry" class="button-secondary study-settings-retry" hidden>Retry save</button>
+                        </div>
+                    </section>
+                </div>
 
-        <main class="main-content">
-            <a class="back-link" href="/decks/{{ deck[0] }}">Back to deck</a>
+            </div>
+        </nav>
 
-            <header class="page-header">
+        <main class="study-workspace">
+            <header class="study-session-header">
+                <p class="study-eyebrow">STUDY SESSION</p>
                 <h1>{{ deck[1] }}</h1>
-                <div class="study-progress-row">
-    <progress
-        class="study-progress"
-        value="{{ session.good_count }}"
-        max="{{ session.total_cards }}"
-        aria-label="Session progress"
-    ></progress>
-
-    <span>{{ session.good_count }} / {{ session.total_cards }} cards completed</span>
-</div>
+                <div class="study-progress-summary">
+                    <span class="study-progress-label">
+                        <strong>{{ session.good_count }}</strong> of {{ session.total_cards }} completed
+                    </span>
+                    <span class="study-progress-percentage">{{ (session.progress * 100) | round | int }}%</span>
+                </div>
+                <progress
+                    class="study-progress study-workspace-progress"
+                    value="{{ session.good_count }}"
+                    max="{{ session.total_cards }}"
+                    aria-label="Cards completed"
+                >{{ (session.progress * 100) | round | int }}%</progress>
+                <p class="study-remaining">{{ session.total_cards - session.good_count }} remaining</p>
             </header>
-            <section class="study-settings">
-    <h2>Session settings</h2>
 
-    <form
-        class="study-settings-form"
-        action="/study/{{ session.id }}/settings"
-        method="post"
-    >
-        <div class="form-field">
-            <label for="auto-speak">Auto-speak</label>
-            <select id="auto-speak" name="auto_speak">
-                <option value="off" {% if session.auto_speak == "off" %}selected{% endif %}>
-                    Off
-                </option>
-                <option value="front" {% if session.auto_speak == "front" %}selected{% endif %}>
-                    Front only
-                </option>
-                <option value="front_back" {% if session.auto_speak == "front_back" %}selected{% endif %}>
-                    Front + Back
-                </option>
-            </select>
-        </div>
+            <section class="study-focus" aria-label="Current flashcard">
+                <article class="study-card">
+                    <div class="study-card-section study-prompt">
+                        <div class="study-section-heading">
+                            <h2>Prompt</h2>
+                            <button
+                                class="study-audio-button"
+                                id="speak-front"
+                                type="button"
+                                data-language="{{ front_language }}"
+                                aria-label="Play prompt audio"
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+                                    <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+                                    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+                                    <path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+                                </svg>
+                                <span>Play front</span>
+                            </button>
+                        </div>
+                        <div id="front-text" class="study-card-content">{{ front_text }}</div>
+                    </div>
 
-        <div class="form-field">
-            <label>
-                <input
-                    type="checkbox"
-                    name="auto_reveal"
-                    value="true"
-                    {% if session.auto_reveal %}checked{% endif %}
+                    <div class="study-reveal-area">
+                        <button class="button-primary study-reveal-button" id="reveal-button" type="button">
+                            Reveal answer <span class="study-shortcut-hint" aria-hidden="true">Space</span>
+                        </button>
+                    </div>
+
+                    <div id="answer" class="study-card-section study-answer" tabindex="-1" hidden>
+                        <div class="study-section-heading">
+                            <h2>Answer</h2>
+                            <button
+                                class="study-audio-button"
+                                id="speak-back"
+                                type="button"
+                                data-language="{{ back_language }}"
+                                aria-label="Play answer audio"
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+                                    <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+                                    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+                                    <path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+                                </svg>
+                                <span>Play answer</span>
+                            </button>
+                        </div>
+                        <div id="back-text" class="study-card-content">{{ back_text }}</div>
+                    </div>
+                </article>
+
+                <p id="audio-status" class="study-audio-status" role="status" aria-live="polite"></p>
+
+                <!-- Ratings intentionally live outside the reading surface. -->
+                <form
+                    id="rating-actions"
+                    class="study-rating-actions"
+                    action="/study/{{ session.id }}/rate"
+                    method="post"
+                    aria-label="Evaluate the current card"
+                    hidden
                 >
-                Auto-reveal answer
-            </label>
-        </div>
+                    <input id="revealed-input" type="hidden" name="revealed" value="false">
+                    <input type="hidden" name="study_card_id" value="{{ session.current_card[0] }}">
+                    <button class="button-secondary study-rating-button" type="submit" name="rating" value="again">
+                        Again <span class="study-rating-shortcut" aria-hidden="true">1</span>
+                    </button>
+                    <button class="button-primary study-rating-button" type="submit" name="rating" value="good">
+                        Good <span class="study-rating-shortcut" aria-hidden="true">2</span>
+                    </button>
+                </form>
 
-        <div class="form-field">
-            <label for="reveal-delay">Reveal delay (seconds)</label>
-            <input
-                id="reveal-delay"
-                type="number"
-                name="reveal_delay_seconds"
-                min="1"
-                step="1"
-                value="{{ session.reveal_delay_seconds }}"
-                required
-            >
-        </div>
+                <p class="study-shortcuts">Space · Reveal &nbsp; 1 · Again &nbsp; 2 · Good &nbsp; R · Repeat audio &nbsp; Esc · Back to deck</p>
+            </section>
 
-        <div class="form-field">
-            <label for="speech-rate">Speech rate</label>
-            <input
-                id="speech-rate"
-                type="number"
-                name="speech_rate"
-                min="0.1"
-                max="10"
-                step="0.1"
-                value="{{ session.speech_rate }}"
-                required
-            >
-        </div>
-
-        <button class="button-secondary" type="submit">
-            Save session settings
-        </button>
-    </form>
-</section>
-
-<section class="study-card">
-    <p>Front</p>
-    <div id="front-text" class="study-card-content">
-        {{ front_text }}
-    </div>
-
-    <button
-        class="button-secondary"
-        id="speak-front"
-        type="button"
-        data-language="{{ front_language }}"
-    >
-        Play front
-    </button>
-
-    <p id="audio-status" role="status" aria-live="polite"></p>
-
-    <button class="button-primary" id="reveal-button" type="button">
-        Reveal answer
-    </button>
-
-    <div id="answer" hidden>
-        <p>Back</p>
-        <div id="back-text" class="study-card-content">
-            {{ back_text }}
-        </div>
-
-        <button
-            class="button-secondary"
-            id="speak-back"
-            type="button"
-            data-language="{{ back_language }}"
-        >
-            Play back
-        </button>
-    </div>
-
-    <form
-        id="rating-actions"
-        action="/study/{{ session.id }}/rate"
-        method="post"
-        hidden
-    >
-        <input
-            id="revealed-input"
-            type="hidden"
-            name="revealed"
-            value="false"
-        >
-
-        <button class="button-secondary" type="submit" name="rating" value="again">
-            Again
-        </button>
-
-        <button class="button-primary" type="submit" name="rating" value="good">
-            Good
-        </button>
-    </form>
-</section>
         </main>
     </div>
-
-    <script src="/static/js/study.js" defer></script>
+    <script src="/static/js/study.js?v=settings-fix-20261013" defer></script>
+    <script src="/static/js/app.js" defer></script>
 </body>
 </html>

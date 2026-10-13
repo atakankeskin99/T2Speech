@@ -1,108 +1,124 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Setup - T2Speech</title>
+    <title>Study setup - T2Speech</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("t2speech-theme");
+            document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+        } catch {
+            document.documentElement.dataset.theme = "light";
+        }
+    </script>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body>
+<body class="study-lifecycle-page">
     <div class="app-shell">
         <aside class="sidebar">
             <a class="brand" href="/">T2Speech</a>
             <nav class="sidebar-nav" aria-label="Main navigation">
                 <a class="nav-link is-active" href="/">Library</a>
             </nav>
+            <div class="sidebar-theme">
+                <label class="visually-hidden" for="theme-select">Color theme</label>
+                <select id="theme-select" name="theme" aria-label="Color theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
         </aside>
 
-        <main class="main-content">
-            <a class="back-link" href="/decks/{{ deck[0] }}">Back to deck</a>
-
-            <header class="page-header">
+        <main class="main-content study-lifecycle-main">
+            <a class="back-link" href="/decks/{{ deck[0] }}">← Back to deck</a>
+            <header class="page-header study-lifecycle-header">
+                <p class="study-lifecycle-eyebrow">STUDY</p>
                 <h1>Study setup</h1>
-                <p>{{ deck[1] }} · {{ total_cards }} cards</p>
+                <p class="study-lifecycle-subtitle">{{ deck[1] }} · {{ total_cards }} cards</p>
             </header>
 
             {% if session_created %}
-<p class="empty-state">Study session created.</p>
-{% endif %}
+            <p class="study-lifecycle-notice" role="status">Study session created.</p>
+            {% endif %}
 
-{% if active_session and not confirm_replace %}
-<p class="empty-state">
-    An active session exists. You can resume it or start a new session.
-</p>
+            {% if confirm_replace %}
+            <section class="study-flow-panel study-replace-panel" aria-labelledby="replace-heading">
+                <p class="study-lifecycle-eyebrow">CONFIRM NEW SESSION</p>
+                <h2 id="replace-heading">Replace your unfinished session?</h2>
+                <p>Starting a new session will discard progress from the current session. Your deck and its cards will not be deleted.</p>
 
-<a class="button-primary" href="/study/{{ active_session[0] }}">
-    Resume session
-</a>
-{% endif %}
+                {% if active_session_state %}
+                <div class="study-replace-progress">
+                    <span>Current progress</span>
+                    <strong>{{ active_session_state.good_count }} of {{ active_session_state.total_cards }} completed</strong>
+                </div>
+                {% endif %}
 
-{% if confirm_replace %}
-<p class="empty-state">
-    This deck already has an active session. Replace it with a new session?
-</p>
+                <div class="study-replace-options">
+                    <p class="study-options-label">New session options</p>
+                    <p>Shuffle: <strong>{{ 'On' if shuffle else 'Off' }}</strong> <span aria-hidden="true">·</span> Reverse: <strong>{{ 'On' if reverse else 'Off' }}</strong></p>
+                </div>
 
-<form action="/decks/{{ deck[0] }}/study/start" method="post">
-    <input
-        type="hidden"
-        name="shuffle"
-        value="{{ 'true' if shuffle else 'false' }}"
-    >
-    <input
-        type="hidden"
-        name="reverse"
-        value="{{ 'true' if reverse else 'false' }}"
-    >
-    <input type="hidden" name="replace_active" value="true">
+                <form class="study-flow-actions" action="/decks/{{ deck[0] }}/study/start" method="post">
+                    <input type="hidden" name="shuffle" value="{{ 'true' if shuffle else 'false' }}">
+                    <input type="hidden" name="reverse" value="{{ 'true' if reverse else 'false' }}">
+                    <input type="hidden" name="replace_active" value="true">
+                    <button class="button-primary" type="submit">Replace session and start new</button>
+                    <a class="button-secondary" href="/decks/{{ deck[0] }}/study/setup">Cancel</a>
+                </form>
+            </section>
+            {% else %}
+                {% if active_session_state %}
+                <section class="study-resume-panel" aria-labelledby="resume-heading">
+                    <div class="study-resume-heading">
+                        <div>
+                            <p class="study-lifecycle-eyebrow">IN PROGRESS</p>
+                            <h2 id="resume-heading">Continue your session</h2>
+                        </div>
+                        <span class="study-resume-percentage">{{ (active_session_state.progress * 100) | round | int }}%</span>
+                    </div>
+                    <p class="study-resume-summary">{{ active_session_state.good_count }} of {{ active_session_state.total_cards }} completed · {{ active_session_state.total_cards - active_session_state.good_count }} remaining</p>
+                    <progress class="study-progress study-resume-progress" value="{{ active_session_state.good_count }}" max="{{ active_session_state.total_cards }}" aria-label="Current session progress">{{ (active_session_state.progress * 100) | round | int }}%</progress>
+                    <div class="study-flow-actions">
+                        <a class="button-primary" href="/study/{{ active_session_state.id }}">Resume session</a>
+                    </div>
+                </section>
+                {% endif %}
 
-    <button class="button-primary" type="submit">
-        Replace session and start new
-    </button>
-
-    <a class="button-secondary" href="/decks/{{ deck[0] }}/study/setup">
-        Cancel
-    </a>
-</form>
-{% else %}
-<form
-    class="study-setup-form"
-    action="/decks/{{ deck[0] }}/study/start"
-    method="post"
->
-    <div class="form-field">
-        <label>
-            <input
-                type="checkbox"
-                name="shuffle"
-                value="true"
-                {% if shuffle %}checked{% endif %}
-            >
-            Shuffle cards
-        </label>
-    </div>
-
-    <div class="form-field">
-        <label>
-            <input
-                type="checkbox"
-                name="reverse"
-                value="true"
-                {% if reverse %}checked{% endif %}
-            >
-            Reverse front and back
-        </label>
-    </div>
-
-    <button
-        class="button-primary"
-        type="submit"
-        {% if total_cards == 0 %}disabled{% endif %}
-    >
-        Start session
-    </button>
-</form>
-{% endif %} 
+                <section class="study-flow-panel study-new-panel" aria-labelledby="new-session-heading">
+                    <h2 id="new-session-heading">{{ 'Start a new session' if active_session_state else 'New session' }}</h2>
+                    {% if active_session_state %}
+                    <p class="study-setup-intro">You can start with a different card order. You will be asked to confirm before your unfinished session is replaced.</p>
+                    {% else %}
+                    <p class="study-setup-intro">Choose how you would like to study. You can change audio and reveal settings during the session.</p>
+                    {% endif %}
+                    <form class="study-setup-form" action="/decks/{{ deck[0] }}/study/start" method="post">
+                        <label class="study-setup-option">
+                            <input type="checkbox" name="shuffle" value="true" {% if shuffle %}checked{% endif %}>
+                            <span>
+                                <strong>Shuffle cards</strong>
+                                <small>Study cards in a random order.</small>
+                            </span>
+                        </label>
+                        <label class="study-setup-option">
+                            <input type="checkbox" name="reverse" value="true" {% if reverse %}checked{% endif %}>
+                            <span>
+                                <strong>Reverse cards</strong>
+                                <small>Practice answers as prompts.</small>
+                            </span>
+                        </label>
+                        <div class="study-flow-actions study-setup-actions">
+                            <button class="{{ 'button-secondary' if active_session_state else 'button-primary' }}" type="submit" {% if total_cards == 0 %}disabled{% endif %}>Start new session</button>
+                        </div>
+                        {% if total_cards == 0 %}
+                        <p class="study-lifecycle-help" role="status">Add at least one card to this deck before starting a session.</p>
+                        {% endif %}
+                    </form>
+                </section>
+            {% endif %}
         </main>
     </div>
+    <script src="/static/js/app.js" defer></script>
 </body>
 </html>

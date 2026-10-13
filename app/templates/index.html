@@ -1,9 +1,17 @@
-<!doctype html> 
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T2Speech App</title>
+    <title>Library · T2Speech</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("t2speech-theme");
+            document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+        } catch {
+            document.documentElement.dataset.theme = "light";
+        }
+    </script>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
@@ -12,98 +20,129 @@
             <a class="brand" href="/">T2Speech</a>
 
             <nav class="sidebar-nav" aria-label="Main navigation">
-        <a class="nav-link is-active" href="/" aria-current="page">
-            Library
-        </a>
-    </nav>
-</aside>
+                <a class="nav-link is-active" href="/" aria-current="page">Library</a>
+            </nav>
 
-    <main class="main-content">
-        <header class="page-header">
-        <h1>Library</h1>
-         </header>
+            <div class="sidebar-theme">
+                <label class="visually-hidden" for="theme-select">Color theme</label>
+                <select id="theme-select" name="theme" aria-label="Color theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+        </aside>
 
-<a class="button-secondary" href="/imports/csv">Import CSV</a>
-<a class="button-secondary" href="/imports/xlsx">Import XLSX</a>
+        <main class="main-content">
+            <header class="page-header library-header">
+                <h1>Library</h1>
+                <div class="library-actions">
+                    <details class="import-menu">
+                        <summary class="button button-secondary">Import</summary>
+                        <div class="import-menu-items">
+                            <a href="/imports/csv">Import CSV</a>
+                            <a href="/imports/xlsx">Import XLSX</a>
+                        </div>
+                    </details>
+                    <button class="button button-primary" id="create-deck-toggle"
+                            type="button" aria-expanded="false" aria-controls="create-deck-panel">
+                        New deck
+                    </button>
+                </div>
+            </header>
 
-<section class="create-deck-section">
-      <section class="create-deck-section">
-            <h2>Create a deck</h2>
-         
-        <form class="create-deck-form" action="/decks" method="post">
-        <label for="name">Deck name</label>
-        <input type="text" id="name" name="name" required>
-        
-        <label for="description">Description</label>
-        <textarea id="description" name="description"></textarea>
-        <div class="form-field">
-    <label for="front_language">Front language</label>
-    <select id="front_language" name="front_language" required>
-        <option value="" disabled selected>Select a language</option>
-        {% for code, label in languages %}
-        <option value="{{ code }}">{{ label }}</option>
-        {% endfor %}
-    </select>
-</div>
+            <section class="create-deck-section" id="create-deck-panel" aria-labelledby="create-deck-heading" hidden>
+                <div class="form-panel-heading">
+                    <div>
+                        <h2 id="create-deck-heading">Create a deck</h2>
+                        <p>Give your new deck a name and choose the languages for each side.</p>
+                    </div>
+                    <button class="button button-quiet" id="close-create-deck" type="button" aria-label="Close create deck form">Close</button>
+                </div>
 
-<div class="form-field">
-    <label for="back_language">Back language</label>
-    <select id="back_language" name="back_language" required>
-        <option value="" disabled selected>Select a language</option>
-        {% for code, label in languages %}
-        <option value="{{ code }}">{{ label }}</option>
-        {% endfor %}
-    </select>
-</div>
-        
-        <button type="submit">Create deck</button>
-        </form>
-        </section>
-        <section class="deck-list-section">
-            <h2>Your decks</h2>
-        {% if decks %}
-            <ul class="deck-list">
-            {% for deck in decks %}
-            <li>
-    <div class="deck-info">
-        <a class="deck-title" href="/decks/{{ deck[0] }}">
-            {{ deck[1] }}
-        </a>
-        <p class="deck-description">{{ deck[2] }}</p>
-    </div>
+                <form class="create-deck-form" action="/decks" method="post">
+                    <div class="form-field">
+                        <label for="name">Deck name</label>
+                        <input type="text" id="name" name="name" required autocomplete="off">
+                    </div>
 
-    <div class="deck-actions">
-        <a class="deck-edit-link" href="/decks/{{ deck[0] }}/edit">
-            Edit deck
-        </a>
+                    <div class="form-field">
+                        <label for="description">Description <span class="label-optional">Optional</span></label>
+                        <textarea id="description" name="description" rows="3"></textarea>
+                    </div>
 
-        <form class="delete-deck-form"
-              action="/decks/{{ deck[0] }}/delete"
-              method="post">
-            <button type="submit">Delete</button>
-        </form>
-    </div>
-</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="empty-state">No decks yet. Create your first deck above.</p>
-        {% endif %}
-    </section>
+                    <div class="language-fields">
+                        <div class="form-field">
+                            <label for="front_language">Front language</label>
+                            <select id="front_language" name="front_language" required>
+                                <option value="" disabled selected>Select a language</option>
+                                {% for code, label in languages %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-        <dialog id="delete-deck-dialog">
-    <h2>Delete this deck?</h2>
-    <p>Deleting this deck will also delete all cards inside it.</p>
+                        <div class="form-field">
+                            <label for="back_language">Back language</label>
+                            <select id="back_language" name="back_language" required>
+                                <option value="" disabled selected>Select a language</option>
+                                {% for code, label in languages %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
 
-    <label for="skip-delete-confirmation">
-        <input type="checkbox" id="skip-delete-confirmation">
-        Don’t ask again
-    </label>
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">Create deck</button>
+                        <button class="button button-secondary" id="cancel-create-deck" type="button">Cancel</button>
+                    </div>
+                </form>
+            </section>
 
-    <button type="button" id="cancel-deck-delete">Cancel</button>
-    <button type="button" id="confirm-deck-delete">Delete deck</button>
-</dialog>
-    </main>
+            <section class="deck-list-section" aria-labelledby="deck-list-heading">
+                <div class="section-heading">
+                    <h2 id="deck-list-heading">Your decks</h2>
+                    {% if decks %}<span class="deck-count">{{ decks|length }}</span>{% endif %}
+                </div>
+                {% if decks %}
+                <ul class="deck-list">
+                    {% for deck in decks %}
+                    <li class="deck-row">
+                        <div class="deck-info">
+                            <a class="deck-title" href="/decks/{{ deck[0] }}">{{ deck[1] }}</a>
+                            {% if deck[2] %}<p class="deck-description">{{ deck[2] }}</p>{% endif %}
+                        </div>
+
+                        <div class="deck-actions">
+                            <a class="deck-edit-link" href="/decks/{{ deck[0] }}/edit">Edit</a>
+                            <form class="delete-deck-form" action="/decks/{{ deck[0] }}/delete" method="post">
+                                <button class="button-danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <p>No decks yet.</p>
+                    <span>Create a deck to start building your library.</span>
+                </div>
+                {% endif %}
+            </section>
+
+            <dialog id="delete-deck-dialog" aria-labelledby="delete-dialog-heading" aria-describedby="delete-dialog-description">
+                <h2 id="delete-dialog-heading">Delete this deck?</h2>
+                <p id="delete-dialog-description">Deleting this deck will also delete all cards inside it.</p>
+                <label class="delete-dialog-option" for="skip-delete-confirmation">
+                    <input type="checkbox" id="skip-delete-confirmation">
+                    Don’t ask again
+                </label>
+                <div class="dialog-actions">
+                    <button class="button button-secondary" type="button" id="cancel-deck-delete">Cancel</button>
+                    <button class="button button-danger" type="button" id="confirm-deck-delete">Delete deck</button>
+                </div>
+            </dialog>
+        </main>
     </div>
     <script src="/static/js/app.js" defer></script>
 </body>
