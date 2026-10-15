@@ -138,7 +138,7 @@ These changes are described in the [v0.2.0 release notes](https://github.com/ata
 | Windows portable ZIP (`v0.2.0`) | Released — preview; startup issue pending |
 | Reliable startup and validation on another Windows computer | Pending |
 | Docker self-hosting | Planned |
-| Linux compatibility testing | Planned |
+| Linux web application compatibility | Completed — manually tested on Linux Mint over LAN |
 | Additional desktop packaging | Planned |
 
 The roadmap describes current priorities, not fixed delivery dates.
@@ -228,7 +228,7 @@ python -m uvicorn app.main:app --reload
 
 For PowerShell, activate the environment using `.\.venv\Scripts\Activate.ps1` instead.
 
-**Linux — not yet validated**
+**Linux — manually tested (web application)**
 
 ```bash
 git clone https://github.com/atakankeskin99/T2Speech.git
@@ -237,10 +237,12 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 mkdir -p data
-python -m uvicorn app.main:app --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Open `http://127.0.0.1:8000` after starting the server. The `--reload` option is for development only. Linux instructions are preliminary and may require adjustment.
+On the Linux machine, open `http://127.0.0.1:8000`. To access T2Speech from another device on the same trusted LAN, open `http://<linux-lan-ip>:8000` in that device's browser. Run `hostname -I` on Linux to find its LAN IP address. Binding to `0.0.0.0` makes the application reachable through available network interfaces; use this only on a trusted network, as the development server does not provide authentication or HTTPS.
+
+This source-based web setup was manually tested on a headless Linux Mint machine accessed via SSH, with application features reported working. It does not validate native Linux desktop packaging or Docker deployment. For local-only development, omit `--host 0.0.0.0` and optionally add `--reload`.
 
 ### Testing
 
@@ -286,7 +288,7 @@ The Study Mode suite covers session creation, resumption and replacement; Again/
 | --- | --- |
 | Windows portable ZIP | Available — preview (`v0.2.0`), known startup issue |
 | Windows local web application | Tested during development |
-| Linux local web application | Not yet validated |
+| Linux local/LAN web application | Manually tested on Linux Mint (source-based) |
 | Windows installer | Not available |
 | Linux desktop package | Planned |
 | Docker deployment | Planned |
@@ -294,7 +296,7 @@ The Study Mode suite covers session creation, resumption and replacement; Again/
 ### Technical Limitations
 
 - The Windows portable distribution has a known startup issue and has not yet been validated on a separate Windows computer.
-- Linux compatibility and Docker-based deployment have not yet been verified or released.
+- The Linux source-based web application has been manually tested; native Linux desktop packaging and Docker deployment have not yet been validated or released.
 - Speech playback depends on the voices available on the user's system.
 - CSV/XLSX exports contain card content, not full application backups or study-session history.
 - Native Anki `.apkg` import and cloud synchronization are not supported.
