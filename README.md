@@ -30,7 +30,7 @@ The demo runs entirely in your browser using read-only sample data. Study sessio
 
 The interactive demo is deployed through GitHub Pages using GitHub Actions. Deployment and manual functional testing have been completed successfully.
 
-For implementation details, testing, and limitations, see the [GitHub Pages demo documentation](docs/github-pages-demo.md).
+For implementation details, testing, and limitations, see the [Interactive Demo documentation](demo/README.md).
 
 ## Screenshots
 
